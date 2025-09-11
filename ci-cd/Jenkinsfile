@@ -1,0 +1,133 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_REGISTRY = 'your-registry.com'
+        IMAGE_NAME = 'f1nance'
+        CLIENT_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-client"
+        SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
+        BUILD_NUMBER = "${env.BUILD_NUMBER}"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build Client Image') {
+            steps {
+                script {
+                    def clientImage = docker.build("${CLIENT_IMAGE}:${BUILD_NUMBER}", "-f ci-cd/client.Dockerfile .")
+                    clientImage.push("${BUILD_NUMBER}")
+                    clientImage.push("latest")
+                }
+            }
+        }
+        
+        stage('Build Server Image') {
+            steps {
+                script {
+                    def serverImage = docker.build("${SERVER_IMAGE}:${BUILD_NUMBER}", "-f ci-cd/server.Dockerfile .")
+                    serverImage.push("${BUILD_NUMBER}")
+                    serverImage.push("latest")
+                }
+            }
+        }
+        
+        stage('Run Tests') {
+            parallel {
+                stage('Client Tests') {
+                    steps {
+                        script {
+                            def clientContainer = docker.image("${CLIENT_IMAGE}:${BUILD_NUMBER}").run("-p 3000:3000")
+                            sleep(10) // Wait for container to start
+                            
+                            // Run client tests (you can add actual test commands here)
+                            sh "curl -f http://localhost:3000 || exit 1"
+                            
+                            clientContainer.stop()
+                        }
+                    }
+                }
+                
+                stage('Server Tests') {
+                    steps {
+                        script {
+                            def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}").run("-p 8000:8000")
+                            sleep(10) // Wait for container to start
+                            
+                            // Run server tests
+                            sh "curl -f http://localhost:8000/ || exit 1"
+                            
+                            serverContainer.stop()
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                script {
+                    // Run Trivy security scan on images
+                    sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${CLIENT_IMAGE}:${BUILD_NUMBER}"
+                    sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${SERVER_IMAGE}:${BUILD_NUMBER}"
+                }
+            }
+        }
+        
+        stage('Deploy to Staging') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                script {
+                    // Deploy to staging environment
+                    sh """
+                        docker run -d --name f1nance-client-staging -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                        docker run -d --name f1nance-server-staging -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
+                    """
+                }
+            }
+        }
+        
+        stage('Deploy to Production') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    // Deploy to production environment
+                    sh """
+                        docker run -d --name f1nance-client-prod -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                        docker run -d --name f1nance-server-prod -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean up containers
+            sh "docker stop f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
+            sh "docker rm f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
+        }
+        
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        
+        failure {
+            echo 'Pipeline failed!'
+        }
+        
+        cleanup {
+            // Clean up workspace
+            cleanWs()
+        }
+    }
+}
+
