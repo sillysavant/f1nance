@@ -5,7 +5,7 @@ interface NavItemProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
-  icon: LucideIcon;
+  icon?: LucideIcon;
 }
 
 const NavItem: React.FC<NavItemProps> = ({ label, isActive, onClick }) => (
