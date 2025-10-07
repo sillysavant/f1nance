@@ -1,8 +1,8 @@
 pipeline {
-    agent any
+    agent { docker { image 'docker:latest' } }
     
     environment {
-        DOCKER_REGISTRY = 'your-registry.com'
+        DOCKER_REGISTRY = 'docker.io/sillysavant161'
         IMAGE_NAME = 'f1nance'
         CLIENT_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-client"
         SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
@@ -15,23 +15,29 @@ pipeline {
                 checkout scm
             }
         }
-        
-        stage('Build Client Image') {
+
+        stage('Build and Push Images') {
             steps {
                 script {
-                    def clientImage = docker.build("${CLIENT_IMAGE}:${BUILD_NUMBER}", "-f ci-cd/client.Dockerfile .")
-                    clientImage.push("${BUILD_NUMBER}")
-                    clientImage.push("latest")
-                }
-            }
-        }
-        
-        stage('Build Server Image') {
-            steps {
-                script {
-                    def serverImage = docker.build("${SERVER_IMAGE}:${BUILD_NUMBER}", "-f ci-cd/server.Dockerfile .")
-                    serverImage.push("${BUILD_NUMBER}")
-                    serverImage.push("latest")
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh """
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+                            docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile .
+                            docker push ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                            docker tag ${CLIENT_IMAGE}:${BUILD_NUMBER} ${CLIENT_IMAGE}:latest
+                            docker push ${CLIENT_IMAGE}:latest
+
+                            docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile .
+                            docker push ${SERVER_IMAGE}:${BUILD_NUMBER}
+                            docker tag ${SERVER_IMAGE}:${BUILD_NUMBER} ${SERVER_IMAGE}:latest
+                            docker push ${SERVER_IMAGE}:latest
+                        """
+                    }
                 }
             }
         }
@@ -42,11 +48,8 @@ pipeline {
                     steps {
                         script {
                             def clientContainer = docker.image("${CLIENT_IMAGE}:${BUILD_NUMBER}").run("-p 3000:3000")
-                            sleep(10) // Wait for container to start
-                            
-                            // Run client tests (you can add actual test commands here)
+                            sleep 10
                             sh "curl -f http://localhost:3000 || exit 1"
-                            
                             clientContainer.stop()
                         }
                     }
@@ -56,11 +59,8 @@ pipeline {
                     steps {
                         script {
                             def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}").run("-p 8000:8000")
-                            sleep(10) // Wait for container to start
-                            
-                            // Run server tests
+                            sleep 10
                             sh "curl -f http://localhost:8000/ || exit 1"
-                            
                             serverContainer.stop()
                         }
                     }
@@ -70,64 +70,44 @@ pipeline {
         
         stage('Security Scan') {
             steps {
-                script {
-                    // Run Trivy security scan on images
-                    sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${CLIENT_IMAGE}:${BUILD_NUMBER}"
-                    sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${SERVER_IMAGE}:${BUILD_NUMBER}"
-                }
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${CLIENT_IMAGE}:${BUILD_NUMBER}"
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${SERVER_IMAGE}:${BUILD_NUMBER}"
             }
         }
         
         stage('Deploy to Staging') {
-            when {
-                branch 'develop'
-            }
+            when { branch 'develop' }
             steps {
-                script {
-                    // Deploy to staging environment
-                    sh """
-                        docker run -d --name f1nance-client-staging -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
-                        docker run -d --name f1nance-server-staging -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
-                    """
-                }
+                sh """
+                    docker rm -f f1nance-client-staging || true
+                    docker rm -f f1nance-server-staging || true
+                    docker run -d --name f1nance-client-staging -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                    docker run -d --name f1nance-server-staging -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
+                """
             }
         }
         
         stage('Deploy to Production') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
-                script {
-                    // Deploy to production environment
-                    sh """
-                        docker run -d --name f1nance-client-prod -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
-                        docker run -d --name f1nance-server-prod -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
-                    """
-                }
+                sh """
+                    docker rm -f f1nance-client-prod || true
+                    docker rm -f f1nance-server-prod || true
+                    docker run -d --name f1nance-client-prod -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                    docker run -d --name f1nance-server-prod -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
+                """
             }
         }
     }
     
     post {
         always {
-            // Clean up containers
             sh "docker stop f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
             sh "docker rm f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
         }
         
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        
-        failure {
-            echo 'Pipeline failed!'
-        }
-        
-        cleanup {
-            // Clean up workspace
-            cleanWs()
-        }
+        success { echo 'Pipeline executed successfully!' }
+        failure { echo 'Pipeline failed!' }
+        cleanup { cleanWs() }
     }
 }
-

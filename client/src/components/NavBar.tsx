@@ -1,64 +1,35 @@
 import React, { useState } from "react";
-import NavItem from "./NavItem";
+import Image from "next/image";
 
-const navItems = [
-  { label: "Dashboard", key: "dashboard" },
-  { label: "Expenses", key: "expenses" },
-  { label: "Notifications", key: "notifications" },
-  { label: "AI Advisor", key: "ai-advisor" },
-  { label: "Settings", key: "settings" },
-];
+import NavItem from "./NavItem";
+import { NAV_ITEMS } from "../constants/navItems";
 
 export default function Navbar() {
   const [selected, setSelected] = useState("dashboard");
 
   return (
-    <nav
-      style={{
-        width: "20vw",
-        minWidth: 200,
-        maxWidth: 320,
-        background: "#fff",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        position: "fixed",
-        left: 0,
-        top: 0,
-        boxShadow: "1px 0 0 #e5e7eb",
-      }}
-    >
-      {/* Logo placeholder */}
-      <div
-        style={{
-          height: 80,
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {/* Logo goes here */}
-      </div>
-      {/* Nav items centered vertically */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
-        {navItems.map((item) => (
-          <NavItem
-            key={item.key}
-            label={item.label}
-            isActive={selected === item.key}
-            onClick={() => setSelected(item.key)}
+    <nav className="bg-white h-screen flex flex-col justify-between items-center fixed left-0 top-0 shadow-navbar w-65 lg:w-60 md:w-30 hidden-sm:flex">
+      <div className="flex flex-col w-full items-center gap-18">
+        <div className="w-9/10 flex items-center justify-center ">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={240}
+            height={0}
+            className="h-auto"
           />
-        ))}
+        </div>
+        {/* Nav items centered vertically */}
+        <div className="flex-1 flex flex-col justify-center items-center w-full">
+          {NAV_ITEMS.map((item) => (
+            <NavItem
+              key={item.key}
+              label={item.label}
+              isActive={selected === item.key}
+              onClick={() => setSelected(item.key)}
+            />
+          ))}
+        </div>
       </div>
     </nav>
   );

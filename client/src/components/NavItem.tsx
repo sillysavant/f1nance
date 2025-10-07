@@ -1,29 +1,25 @@
+import { LucideIcon } from "lucide-react";
 import React from "react";
 
 interface NavItemProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
+  icon: LucideIcon;
 }
 
 const NavItem: React.FC<NavItemProps> = ({ label, isActive, onClick }) => (
-  <button
+  <div
+    className={`w-5/6 px-4 cursor-pointer text-xl hover:bg-active-nav-bg py-3 rounded-lg font-medium ${
+      isActive
+        ? "bg-active-nav-bg/25 text-active-nav-text"
+        : "bg-transparent text-nav-text"
+    }`}
     onClick={onClick}
-    style={{
-      background: isActive ? "#DBEAFE" : "transparent",
-      color: isActive ? "#2563EB" : "#374151",
-      border: "none",
-      outline: "none",
-      width: "100%",
-      padding: "16px 0",
-      fontSize: 18,
-      fontWeight: 500,
-      cursor: "pointer",
-      transition: "background 0.2s, color 0.2s",
-    }}
   >
-    {label}
-  </button>
+    <div></div>
+    <div>{label}</div>
+  </div>
 );
 
 export default NavItem;
