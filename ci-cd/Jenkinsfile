@@ -27,7 +27,7 @@ pipeline {
                         sh """
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-                            docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile .
+                            docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile ci-cd/
                             docker push ${CLIENT_IMAGE}:${BUILD_NUMBER}
                             docker tag ${CLIENT_IMAGE}:${BUILD_NUMBER} ${CLIENT_IMAGE}:latest
                             docker push ${CLIENT_IMAGE}:latest
