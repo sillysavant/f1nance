@@ -1,78 +1,36 @@
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
+# Ignore Next.js build output
+client/.next/
+client/build/
+client/out/
+client/node_modules/
 
-# Node/Next.js
-node_modules/
-dist/
-.next/
-out/
-coverage/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.vercel/
+# Ignore Python virtual environments
+server/env/
+server/venv/
+server/__pycache__/
 
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-.Python
-env/
-venv/
-.venv/
-ENV/
-env.bak/
-*.env
-*.env.*
-.mypy_cache/
-.pytest_cache/
-.coverage
-coverage.xml
-*.cover
-.hypothesis/
-.tox/
-.pylint.d/
-.python-version
-pip-log.txt
-pip-delete-this-directory.txt
-pyvenv.cfg
-
-# Docker
-*.pid
-
-# Terraform
-.terraform/
-terraform.tfstate
-terraform.tfstate.*
-crash.log
-*.tfvars
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-.terraform.lock.hcl
-
-# VSCode
+# Ignore IDE/editor folders
+.idea/
 .vscode/
 
-# Logs
-logs/
-*.log
-debug.log
-
-# Misc
-*.swp
-*.swo
-*~
+# Ignore OS-specific files
+.DS_Store
 Thumbs.db
-ehthumbs.db
-Icon?
-Desktop.ini
-@eaDir
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore Terraform state and lock files
+.terraform/
+terraform.tfstate*
+.terraform.lock.hcl
+
+# Ignore Docker files
+*.pid
+
+# Ignore swap/temp files
+*.swp
+*~
+*.tmp
+.env
