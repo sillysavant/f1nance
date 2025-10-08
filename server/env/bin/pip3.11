@@ -1,4 +1,4 @@
-#!/Users/longtv/Documents/CS691/f1nance/server/env/bin/python3.11
+#!/Users/longtv/Documents/CS691/f1nance/server/env/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
