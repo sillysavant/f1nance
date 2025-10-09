@@ -1,169 +1,106 @@
-// pipeline {
-//     agent any
-    
-//     environment {
-//         DOCKER_REGISTRY = 'docker.io/sillysavant161'
-//         IMAGE_NAME = 'f1nance'
-//         CLIENT_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-client"
-//         SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
-//         BUILD_NUMBER = "${env.BUILD_NUMBER}"
-//     }
-    
-//     stages {
-//         stage('Checkout') {
-//             steps {
-//                 checkout scm
-//             }
-//         }
-
-//         stage('Build and Push Images') {
-//             steps {
-//                 script {
-//                     withCredentials([usernamePassword(
-//                         credentialsId: 'dockerhub',
-//                         usernameVariable: 'DOCKER_USER',
-//                         passwordVariable: 'DOCKER_PASS'
-//                     )]) {
-//                         sh """
-//                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-
-//                             docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile ci-cd/
-//                             docker push ${CLIENT_IMAGE}:${BUILD_NUMBER}
-//                             docker tag ${CLIENT_IMAGE}:${BUILD_NUMBER} ${CLIENT_IMAGE}:latest
-//                             docker push ${CLIENT_IMAGE}:latest
-
-//                             docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile .
-//                             docker push ${SERVER_IMAGE}:${BUILD_NUMBER}
-//                             docker tag ${SERVER_IMAGE}:${BUILD_NUMBER} ${SERVER_IMAGE}:latest
-//                             docker push ${SERVER_IMAGE}:latest
-//                         """
-//                     }
-//                 }
-//             }
-//         }
-        
-//         stage('Run Tests') {
-//             parallel {
-//                 stage('Client Tests') {
-//                     steps {
-//                         script {
-//                             def clientContainer = docker.image("${CLIENT_IMAGE}:${BUILD_NUMBER}").run("-p 3000:3000")
-//                             sleep 10
-//                             sh "curl -f http://localhost:3000 || exit 1"
-//                             clientContainer.stop()
-//                         }
-//                     }
-//                 }
-                
-//                 stage('Server Tests') {
-//                     steps {
-//                         script {
-//                             def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}").run("-p 8000:8000")
-//                             sleep 10
-//                             sh "curl -f http://localhost:8000/ || exit 1"
-//                             serverContainer.stop()
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-        
-//         stage('Security Scan') {
-//             steps {
-//                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${CLIENT_IMAGE}:${BUILD_NUMBER}"
-//                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${SERVER_IMAGE}:${BUILD_NUMBER}"
-//             }
-//         }
-        
-//         stage('Deploy to Staging') {
-//             when { branch 'develop' }
-//             steps {
-//                 sh """
-//                     docker rm -f f1nance-client-staging || true
-//                     docker rm -f f1nance-server-staging || true
-//                     docker run -d --name f1nance-client-staging -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
-//                     docker run -d --name f1nance-server-staging -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
-//                 """
-//             }
-//         }
-        
-//         stage('Deploy to Production') {
-//             when { branch 'main' }
-//             steps {
-//                 sh """
-//                     docker rm -f f1nance-client-prod || true
-//                     docker rm -f f1nance-server-prod || true
-//                     docker run -d --name f1nance-client-prod -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
-//                     docker run -d --name f1nance-server-prod -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
-//                 """
-//             }
-//         }
-//     }
-    
-//     post {
-//         always {
-//             sh "docker stop f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
-//             sh "docker rm f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
-//         }
-        
-//         success { echo 'Pipeline executed successfully!' }
-//         failure { echo 'Pipeline failed!' }
-//         cleanup { cleanWs() }
-//     }
-// }
-
 pipeline {
     agent any
-
+    
+    environment {
+        DOCKER_REGISTRY = 'docker.io/sillysavant161'
+        IMAGE_NAME = 'f1nance'
+        CLIENT_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-client"
+        SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
+        BUILD_NUMBER = "${env.BUILD_NUMBER}"
+    }
+    
     stages {
-        stage('Verify Environment') {
+        stage('Checkout') {
             steps {
-                sh 'whoami'
-                sh 'hostname'
-                sh 'java -version || echo Java not installed'
-                sh 'node --version || echo Node not installed'
-                sh 'npm --version || echo NPM not installed'
-                sh 'git --version'
+                checkout scm
             }
         }
 
-        stage('Setup Python') {
+        stage('Build and Push Images') {
             steps {
-                sh '''
-                python3.11 -m venv venv
-                source venv/bin/activate
-                python3 -m pip install --upgrade pip
-                pip install -r server/requirements.txt
-                '''
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh """
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+                            docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile ci-cd/
+                            docker push ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                            docker tag ${CLIENT_IMAGE}:${BUILD_NUMBER} ${CLIENT_IMAGE}:latest
+                            docker push ${CLIENT_IMAGE}:latest
+
+                            docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile .
+                            docker push ${SERVER_IMAGE}:${BUILD_NUMBER}
+                            docker tag ${SERVER_IMAGE}:${BUILD_NUMBER} ${SERVER_IMAGE}:latest
+                            docker push ${SERVER_IMAGE}:latest
+                        """
+                    }
+                }
             }
         }
-
-        stage('Build Simulation') {
-            steps {
-                sh '''
-                    echo "Starting lightweight build..."
-                    mkdir -p build
-                    echo "Hello from Jenkins build at $(date)" > build/output.txt
-                    cat build/output.txt
-                '''
+        
+        stage('Run Tests') {
+            parallel {
+                stage('Client Tests') {
+                    steps {
+                        script {
+                            def clientContainer = docker.image("${CLIENT_IMAGE}:${BUILD_NUMBER}").run("-p 3000:3000")
+                            sleep 10
+                            sh "curl -f http://localhost:3000 || exit 1"
+                            clientContainer.stop()
+                        }
+                    }
+                }
+                
+                stage('Server Tests') {
+                    steps {
+                        script {
+                            def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}").run("-p 8000:8000")
+                            sleep 10
+                            sh "curl -f http://localhost:8000/ || exit 1"
+                            serverContainer.stop()
+                        }
+                    }
+                }
             }
         }
-
-        stage('Test Simulation') {
+        
+        stage('Deploy to Staging') {
+            when { branch 'develop' }
             steps {
-                sh '''
-                    echo "Running dummy tests..."
-                    echo "All tests passed." > test.log
-                    cat test.log
-                '''
+                sh """
+                    docker rm -f f1nance-client-staging || true
+                    docker rm -f f1nance-server-staging || true
+                    docker run -d --name f1nance-client-staging -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                    docker run -d --name f1nance-server-staging -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
+                """
+            }
+        }
+        
+        stage('Deploy to Production') {
+            when { branch 'main' }
+            steps {
+                sh """
+                    docker rm -f f1nance-client-prod || true
+                    docker rm -f f1nance-server-prod || true
+                    docker run -d --name f1nance-client-prod -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                    docker run -d --name f1nance-server-prod -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
+                """
             }
         }
     }
-
+    
     post {
         always {
-            cleanWs()
-            echo 'Pipeline finished.'
+            sh "docker stop f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
+            sh "docker rm f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
         }
+        
+        success { echo 'Pipeline executed successfully!' }
+        failure { echo 'Pipeline failed!' }
+        cleanup { cleanWs() }
     }
 }
