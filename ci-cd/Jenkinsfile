@@ -1,19 +1,16 @@
 pipeline {
-    agent any
-    
+    agent { label 'ec2' }
+
     environment {
         DOCKER_REGISTRY = 'docker.io/sillysavant161'
         IMAGE_NAME = 'f1nance'
         CLIENT_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-client"
         SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
-        BUILD_NUMBER = "${env.BUILD_NUMBER}"
     }
-    
+
     stages {
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Build and Push Images') {
@@ -24,7 +21,7 @@ pipeline {
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
-                        sh """
+                        sh '''
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
                             docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile ci-cd/
@@ -36,71 +33,72 @@ pipeline {
                             docker push ${SERVER_IMAGE}:${BUILD_NUMBER}
                             docker tag ${SERVER_IMAGE}:${BUILD_NUMBER} ${SERVER_IMAGE}:latest
                             docker push ${SERVER_IMAGE}:latest
-                        """
+                        '''
                     }
                 }
             }
         }
-        
+
         stage('Run Tests') {
             parallel {
                 stage('Client Tests') {
                     steps {
                         script {
-                            def clientContainer = docker.image("${CLIENT_IMAGE}:${BUILD_NUMBER}").run("-p 3000:3000")
+                            def clientContainer = docker.image("${CLIENT_IMAGE}:${BUILD_NUMBER}")
+                                .run("--rm -d -p 3100:3000")
                             sleep 10
-                            sh "curl -f http://localhost:3000 || exit 1"
-                            clientContainer.stop()
+                            sh "curl -f http://localhost:3100 || exit 1"
+                            sh "docker stop ${clientContainer.id}"
                         }
                     }
                 }
-                
+
                 stage('Server Tests') {
                     steps {
                         script {
-                            def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}").run("-p 8000:8000")
+                            def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}")
+                                .run("--rm -d -p 8100:8000")
                             sleep 10
-                            sh "curl -f http://localhost:8000/ || exit 1"
-                            serverContainer.stop()
+                            sh "curl -f http://localhost:8100/ || exit 1"
+                            sh "docker stop ${serverContainer.id}"
                         }
                     }
                 }
             }
         }
-        
+
         stage('Deploy to Staging') {
             when { branch 'develop' }
             steps {
-                sh """
-                    docker rm -f f1nance-client-staging || true
-                    docker rm -f f1nance-server-staging || true
+                sh '''
+                    docker rm -f f1nance-client-staging f1nance-server-staging || true
                     docker run -d --name f1nance-client-staging -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
                     docker run -d --name f1nance-server-staging -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
-                """
+                '''
             }
         }
-        
+
         stage('Deploy to Production') {
             when { branch 'main' }
             steps {
-                sh """
-                    docker rm -f f1nance-client-prod || true
-                    docker rm -f f1nance-server-prod || true
+                sh '''
+                    docker rm -f f1nance-client-prod f1nance-server-prod || true
                     docker run -d --name f1nance-client-prod -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
                     docker run -d --name f1nance-server-prod -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
-                """
+                '''
             }
         }
     }
-    
+
     post {
         always {
-            sh "docker stop f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
-            sh "docker rm f1nance-client-staging f1nance-server-staging f1nance-client-prod f1nance-server-prod || true"
+            sh '''
+                docker ps -aq | xargs -r docker stop
+                docker container prune -f
+            '''
         }
-        
-        success { echo 'Pipeline executed successfully!' }
-        failure { echo 'Pipeline failed!' }
+        success { echo 'Pipeline executed successfully.' }
+        failure { echo 'Pipeline failed.' }
         cleanup { cleanWs() }
     }
 }
