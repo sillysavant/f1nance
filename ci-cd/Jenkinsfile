@@ -19,7 +19,7 @@ pipeline {
                         color: '#439FE0',
                         message: "🚀 *Build #${env.BUILD_NUMBER}* for *${env.JOB_NAME}* started on branch *${env.GIT_BRANCH ?: 'unknown'}*"
                     )
-                    jiraAddComment(issueKey: "${JIRA_ISSUE}", comment: "Build #${env.BUILD_NUMBER} started for ${env.JOB_NAME}")
+                    jiraComment(issueKey: "${JIRA_ISSUE}", comment: "Build #${env.BUILD_NUMBER} started for ${env.JOB_NAME}")
                 }
             }
         }
@@ -94,11 +94,11 @@ pipeline {
                         '''
                         slackSend(channel: '#ci-cd', color: '#2eb886',
                                   message: "✅ *Staging* deployment successful for build #${env.BUILD_NUMBER}")
-                        jiraAddComment(issueKey: "${JIRA_ISSUE}", comment: "Staging deployment succeeded for build #${env.BUILD_NUMBER}")
+                        jiraComment(issueKey: "${JIRA_ISSUE}", comment: "Staging deployment succeeded for build #${env.BUILD_NUMBER}")
                     } catch (err) {
                         slackSend(channel: '#ci-cd', color: '#a30200',
                                   message: "❌ *Staging* deployment failed for build #${env.BUILD_NUMBER}")
-                        jiraAddComment(issueKey: "${JIRA_ISSUE}", comment: "Staging deployment failed for build #${env.BUILD_NUMBER}: ${err}")
+                        jiraComment(issueKey: "${JIRA_ISSUE}", comment: "Staging deployment failed for build #${env.BUILD_NUMBER}: ${err}")
                         error "Staging deployment failed"
                     }
                 }
@@ -117,11 +117,11 @@ pipeline {
                         '''
                         slackSend(channel: '#ci-cd', color: '#2eb886',
                                   message: "🚢 *Production* deployment successful for build #${env.BUILD_NUMBER}")
-                        jiraAddComment(issueKey: "${JIRA_ISSUE}", comment: "Production deployment succeeded for build #${env.BUILD_NUMBER}")
+                        jiraComment(issueKey: "${JIRA_ISSUE}", comment: "Production deployment succeeded for build #${env.BUILD_NUMBER}")
                     } catch (err) {
                         slackSend(channel: '#ci-cd', color: '#a30200',
                                   message: "🔥 *Production* deployment failed for build #${env.BUILD_NUMBER}")
-                        jiraAddComment(issueKey: "${JIRA_ISSUE}", comment: "Production deployment failed for build #${env.BUILD_NUMBER}: ${err}")
+                        jiraComment(issueKey: "${JIRA_ISSUE}", comment: "Production deployment failed for build #${env.BUILD_NUMBER}: ${err}")
                         error "Production deployment failed"
                     }
                 }
@@ -141,13 +141,13 @@ pipeline {
         success {
             slackSend(channel: '#ci-cd', color: '#36a64f',
                       message: "✅ Pipeline succeeded for *${env.JOB_NAME}* build #${env.BUILD_NUMBER}")
-            jiraAddComment(issueKey: "${JIRA_ISSUE}", comment: "Build #${env.BUILD_NUMBER} succeeded for ${env.JOB_NAME}")
+            jiraComment(issueKey: "${JIRA_ISSUE}", comment: "Build #${env.BUILD_NUMBER} succeeded for ${env.JOB_NAME}")
         }
 
         failure {
             slackSend(channel: '#ci-cd', color: '#ff0000',
                       message: "❌ Pipeline failed for *${env.JOB_NAME}* build #${env.BUILD_NUMBER}")
-            jiraAddComment(issueKey: "${JIRA_ISSUE}", comment: "Build #${env.BUILD_NUMBER} failed for ${env.JOB_NAME}")
+            jiraComment(issueKey: "${JIRA_ISSUE}", comment: "Build #${env.BUILD_NUMBER} failed for ${env.JOB_NAME}")
         }
     }
 }
