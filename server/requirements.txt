@@ -19,3 +19,9 @@ uvicorn==0.35.0
 uvloop==0.21.0
 watchfiles==1.1.0
 websockets==15.0.1
+
+# Plaid and auth
+plaid-python==37.0.0
+python-jose==3.3.0
+passlib[bcrypt]==1.7.4
+boto3==1.40.0

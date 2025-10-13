@@ -8,7 +8,8 @@ export default function Navbar() {
   const [selected, setSelected] = useState("dashboard");
 
   return (
-    <nav className="bg-white h-screen flex flex-col justify-between items-center fixed left-0 top-0 shadow-navbar w-65 lg:w-60 md:w-30 hidden-sm:flex">
+    // make navbar part of the normal flow so sibling content can size alongside it
+    <nav className="bg-white h-screen flex flex-col justify-between items-center shadow-navbar w-65 lg:w-60 md:w-30 hidden-sm:flex">
       <div className="flex flex-col w-full items-center gap-18">
         <div className="w-9/10 flex items-center justify-center ">
           <Image
@@ -25,6 +26,7 @@ export default function Navbar() {
             <NavItem
               key={item.key}
               label={item.label}
+              icon={item.icon}
               isActive={selected === item.key}
               onClick={() => setSelected(item.key)}
             />

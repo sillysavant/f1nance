@@ -34,3 +34,5 @@ terraform.tfstate*
 *~
 *.tmp
 .env
+
+docs/
