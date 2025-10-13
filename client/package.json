@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit && eslint . --ext .ts,.tsx"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

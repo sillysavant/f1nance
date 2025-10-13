@@ -1,6 +1,7 @@
-import useSWR from "swr";
+// import useSWR from "swr";
 
-const fetcher = (url: string, opts?: RequestInit) => fetch(url, opts).then((r) => r.json());
+// const fetcher = (url: string, opts?: RequestInit) =>
+//   fetch(url, opts).then((r) => r.json());
 
 export async function createLinkToken(clientUserId: string) {
   const res = await fetch("/api/plaid/create_link_token", {
