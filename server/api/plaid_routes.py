@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 from .. import plaid
 from .. import kms
 from .. import db as _db
-from ..models import Account
+from ..models import BankAccount
+from .deps import get_current_user
+from sqlalchemy.orm import Session
+from fastapi import Depends
 
 router = APIRouter(prefix="/api/plaid", tags=["plaid"])
 
@@ -28,7 +31,11 @@ def create_link_token(req: LinkTokenRequest):
 
 
 @router.post("/exchange_public_token")
-def exchange_public_token(req: PublicTokenRequest, session: Session = Depends(_db.get_db)):
+def exchange_public_token(
+    req: PublicTokenRequest,
+    session: Session = Depends(_db.get_db),
+    current_user=Depends(get_current_user),
+):
     try:
         access_token, item_id = plaid.exchange_public_token(req.public_token)
 
@@ -39,12 +46,12 @@ def exchange_public_token(req: PublicTokenRequest, session: Session = Depends(_d
             # fallback: store raw token (not recommended)
             encrypted = access_token
 
-        account = Account(
-            user_id=1,  # TODO: replace with authenticated user id
-            provider="plaid",
-            provider_account_id=None,
-            name="Plaid Item",
-            type="bank",
+        account = BankAccount(
+            user_id=current_user.id,
+            provider_name="plaid",
+            account_type="bank",
+            account_mask=None,
+            currency_code=None,
             item_id=item_id,
             access_token_encrypted=encrypted,
         )
@@ -61,6 +68,12 @@ def exchange_public_token(req: PublicTokenRequest, session: Session = Depends(_d
         except Exception:
             client_accounts = []
 
-        return {"item_id": item_id, "account_id": account.id, "accounts": client_accounts}
+        # return both keys for backward compatibility
+        return {
+            "item_id": item_id,
+            "account_id": account.id,
+            "bank_account_id": account.id,
+            "accounts": client_accounts,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

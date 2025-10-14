@@ -16,12 +16,11 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
     SmallInteger,
-    CheckConstraint,
     JSON,
     Enum as SAEnum,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from .db import Base
 
 # -----------------
@@ -59,23 +58,19 @@ class PaymentStatus(PyEnum):
 # -----------------
 # Mixins / Utilities
 # -----------------
-def now():
-    return datetime.utcnow()
-
-
 class TimestampMixin:
     created_at = Column(
         DateTime(timezone=False),
         nullable=False,
+        default=datetime.utcnow,
         server_default=func.now(),
-        default=func.now(),
     )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
         server_default=func.now(),
-        onupdate=func.now(),
-        default=func.now(),
     )
 
 
@@ -98,12 +93,13 @@ class User(Base, TimestampMixin):
 
     # Relationships
     bank_accounts = relationship("BankAccount", back_populates="user", cascade="all,delete-orphan")
-    transactions = relationship("Transaction", secondary="bank_accounts", viewonly=True)
-    student_guardians = relationship(
-        "StudentGuardian",
-        primaryjoin="or_(User.role=='student', User.role=='guardian')",
-        back_populates="user",
-        cascade="all,delete-orphan",
+    # Transactions through BankAccount
+    transactions = relationship(
+        "Transaction",
+        secondary="bank_accounts",
+        primaryjoin="User.id==BankAccount.user_id",
+        secondaryjoin="Transaction.bank_account_id==BankAccount.id",
+        viewonly=True,
     )
     documents = relationship("Document", back_populates="user", cascade="all,delete-orphan")
     subscriptions = relationship("Subscription", back_populates="user", cascade="all,delete-orphan")
@@ -116,11 +112,11 @@ class StudentGuardian(Base):
     # Composite PK (student_id, guardian_id)
     student_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     guardian_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    relationship = Column(String(128), nullable=True)
+    relation_type = Column(String(128), nullable=True)
 
     # relationships
-    student = relationship("User", foreign_keys=[student_id], backref="guardians_of")
-    guardian = relationship("User", foreign_keys=[guardian_id], backref="students_of")
+    student = relationship("User", foreign_keys=[student_id], backref=backref("guardians", cascade="all,delete-orphan"))
+    guardian = relationship("User", foreign_keys=[guardian_id], backref=backref("students", cascade="all,delete-orphan"))
 
 
 class BankAccount(Base, TimestampMixin):
@@ -147,7 +143,7 @@ class Category(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     parent_id = Column(UUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     name = Column(String(150), nullable=False, index=True)
-    type = Column(String(20), nullable=False)  # e.g., 'expense'|'income'
+    type = Column(String(20), nullable=False)
     sort_order = Column(SmallInteger, nullable=True, default=0)
 
     parent = relationship("Category", remote_side=[id], backref="children")
@@ -190,7 +186,7 @@ class Budget(Base, TimestampMixin):
         default=BudgetStatus.DRAFT,
         index=True,
     )
-    created_by = Column(UUID(as_uuid=True), nullable=True)  # optional metadata
+    created_by = Column(UUID(as_uuid=True), nullable=True)
 
     user = relationship("User", backref="budgets")
     items = relationship("BudgetItem", back_populates="budget", cascade="all,delete-orphan")
@@ -203,7 +199,7 @@ class BudgetItem(Base):
     budget_id = Column(UUID(as_uuid=True), ForeignKey("budgets.id", ondelete="CASCADE"), nullable=False, index=True)
     category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     target_amount = Column(Numeric(14, 2), nullable=False)
-    alert_threshold = Column(Numeric(5, 2), nullable=True)  # pct or absolute depending on app design
+    alert_threshold = Column(Numeric(5, 2), nullable=True)
 
     budget = relationship("Budget", back_populates="items")
     category = relationship("Category")
@@ -214,7 +210,7 @@ class Provider(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(200), nullable=False, unique=True)
-    metadata = Column(JSONB, nullable=True)
+    provider_metadata = Column(JSONB, nullable=True)  # fixed reserved 'metadata'
     created_at = Column(DateTime(timezone=False), nullable=False, server_default=func.now())
 
 
@@ -232,7 +228,7 @@ class Subscription(Base, TimestampMixin):
     )
     current_period_start = Column(DateTime(timezone=False), nullable=True)
     current_period_end = Column(DateTime(timezone=False), nullable=True)
-    metadata = Column(JSONB, nullable=True)
+    subscription_metadata = Column(JSONB, nullable=True)  # fixed reserved 'metadata'
 
     user = relationship("User", back_populates="subscriptions")
     payments = relationship("Payment", back_populates="subscription", cascade="all,delete-orphan")
@@ -278,7 +274,7 @@ class Notification(Base, TimestampMixin):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    channel = Column(String(50), nullable=False)  # e.g., 'email', 'sms', 'push'
+    channel = Column(String(50), nullable=False)
     template_key = Column(String(200), nullable=True)
     payload = Column(JSONB, nullable=True)
     read = Column(Boolean, nullable=False, default=False)
@@ -304,10 +300,6 @@ class SupportTicket(Base, TimestampMixin):
 
 
 # -----------------
-# Indexes and Constraints (additional)
+# Indexes and Constraints
 # -----------------
-Index("ix_users_email", User.email)
-Index("ix_bank_accounts_user_id", BankAccount.user_id)
-Index("ix_transactions_bank_account_id", Transaction.bank_account_id)
-Index("ix_transactions_provider_tx_id", Transaction.provider_tx_id)
 UniqueConstraint(Provider.name, name="uq_provider_name")

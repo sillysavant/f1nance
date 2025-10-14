@@ -51,7 +51,7 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY server/ .
+COPY server /app/server
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
