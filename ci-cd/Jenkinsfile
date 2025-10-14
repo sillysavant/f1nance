@@ -134,6 +134,7 @@ pipeline {
             sh '''
                 docker ps -aq | xargs -r docker stop
                 docker container prune -f
+                docker system prune -af --volumes || true
             '''
             cleanWs()
         }
