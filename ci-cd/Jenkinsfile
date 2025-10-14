@@ -14,11 +14,8 @@ pipeline {
         stage('Notify Build Start') {
             steps {
                 script {
-                    slackSend(
-                        channel: '#ci-cd',
-                        color: '#439FE0',
-                        message: "🚀 *Build #${env.BUILD_NUMBER}* for *${env.JOB_NAME}* started on branch *${env.GIT_BRANCH ?: 'unknown'}*"
-                    )
+                    slackSend(channel: '#ci-cd', color: '#439FE0',
+                              message: "🚀 *Build #${env.BUILD_NUMBER}* for *${env.JOB_NAME}* started on branch *${env.GIT_BRANCH ?: 'unknown'}*")
                     jiraComment(issueKey: "${JIRA_ISSUE}", body: "Build #${env.BUILD_NUMBER} started for ${env.JOB_NAME}")
                 }
             }
@@ -63,7 +60,7 @@ pipeline {
                                 .run("--rm -d -p 3100:3000")
                             sleep 10
                             sh "curl -f http://localhost:3100 || exit 1"
-                            sh "docker stop ${clientContainer.id}"
+                            sh "docker stop ${clientContainer.id} || true"
                         }
                     }
                 }
@@ -72,10 +69,13 @@ pipeline {
                     steps {
                         script {
                             def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}")
-                                .run("--rm -d -p 8100:8000")
-                            sleep 10
-                            sh "curl -f http://localhost:8100/ || exit 1"
-                            sh "docker stop ${serverContainer.id}"
+                                .run("--rm -d --name server-test -p 8100:8000")
+                            sleep 15
+                            try {
+                                sh "docker exec server-test curl -f http://localhost:8000/ || (docker logs server-test && exit 1)"
+                            } finally {
+                                sh "docker stop server-test || true"
+                            }
                         }
                     }
                 }
@@ -89,6 +89,7 @@ pipeline {
                     try {
                         sh '''
                             docker rm -f f1nance-client-staging f1nance-server-staging || true
+                            sleep 3
                             docker run -d --name f1nance-client-staging -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
                             docker run -d --name f1nance-server-staging -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
                         '''
@@ -112,6 +113,7 @@ pipeline {
                     try {
                         sh '''
                             docker rm -f f1nance-client-prod f1nance-server-prod || true
+                            sleep 3
                             docker run -d --name f1nance-client-prod -p 3000:3000 ${CLIENT_IMAGE}:${BUILD_NUMBER}
                             docker run -d --name f1nance-server-prod -p 8000:8000 ${SERVER_IMAGE}:${BUILD_NUMBER}
                         '''
