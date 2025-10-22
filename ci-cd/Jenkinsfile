@@ -7,6 +7,8 @@ pipeline {
         CLIENT_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-client"
         SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
         JIRA_ISSUE = 'CPS-1'
+        GITHUB_REPO = 'silly-savant/f1nance'
+        GITHUB_CREDENTIALS = 'github-credentials'
     }
 
     stages {
@@ -14,7 +16,7 @@ pipeline {
         stage('Notify Build Start') {
             steps {
                 script {
-                    githubNotify context: 'Build', status: 'PENDING', description: "Build started on branch ${env.BRANCH_NAME}"
+                    githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Build', status: 'PENDING', description: "Build started on branch ${env.BRANCH_NAME}")
                     slackSend(channel: '#ci-cd', color: '#439FE0',
                               message: "🚀 *Build #${env.BUILD_NUMBER}* for *${env.JOB_NAME}* started on branch *${env.GIT_BRANCH ?: 'unknown'}*")
                     jiraComment(issueKey: "${JIRA_ISSUE}", body: "Build #${env.BUILD_NUMBER} started for ${env.JOB_NAME}")
@@ -29,7 +31,7 @@ pipeline {
         stage('Build and Push Images') {
             steps {
                 script {
-                    githubNotify context: 'Docker Build', status: 'PENDING', description: 'Building Docker images'
+                    githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Docker Build', status: 'PENDING', description: 'Building Docker images')
                     withCredentials([usernamePassword(
                         credentialsId: 'dockerhub',
                         usernameVariable: 'DOCKER_USER',
@@ -49,7 +51,7 @@ pipeline {
                             docker push ${SERVER_IMAGE}:latest
                         '''
                     }
-                    githubNotify context: 'Docker Build', status: 'SUCCESS', description: 'Images built and pushed'
+                    githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Docker Build', status: 'SUCCESS', description: 'Images built and pushed')
                 }
             }
         }
@@ -59,16 +61,16 @@ pipeline {
                 stage('Client Tests') {
                     steps {
                         script {
-                            githubNotify context: 'Client Tests', status: 'PENDING', description: 'Running client tests'
+                            githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Client Tests', status: 'PENDING', description: 'Running client tests')
                             def clientContainer = docker.image("${CLIENT_IMAGE}:${BUILD_NUMBER}")
                                 .run("--rm -d -p 3100:3000")
                             sleep 10
                             try {
                                 sh "curl -f http://localhost:3100 || exit 1"
                                 sh "docker stop ${clientContainer.id} || true"
-                                githubNotify context: 'Client Tests', status: 'SUCCESS', description: 'Client passed tests'
+                                githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Client Tests', status: 'SUCCESS', description: 'Client passed tests')
                             } catch (err) {
-                                githubNotify context: 'Client Tests', status: 'FAILURE', description: 'Client failed tests'
+                                githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Client Tests', status: 'FAILURE', description: 'Client failed tests')
                                 error "Client test failed"
                             }
                         }
@@ -78,15 +80,15 @@ pipeline {
                 stage('Server Tests') {
                     steps {
                         script {
-                            githubNotify context: 'Server Tests', status: 'PENDING', description: 'Running server tests'
+                            githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Server Tests', status: 'PENDING', description: 'Running server tests')
                             def serverContainer = docker.image("${SERVER_IMAGE}:${BUILD_NUMBER}")
                                 .run("--rm -d --name server-test -p 8100:8000")
                             sleep 15
                             try {
                                 sh "docker exec server-test curl -f http://localhost:8000/ || (docker logs server-test && exit 1)"
-                                githubNotify context: 'Server Tests', status: 'SUCCESS', description: 'Server passed tests'
+                                githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Server Tests', status: 'SUCCESS', description: 'Server passed tests')
                             } catch (err) {
-                                githubNotify context: 'Server Tests', status: 'FAILURE', description: 'Server failed tests'
+                                githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Server Tests', status: 'FAILURE', description: 'Server failed tests')
                                 error "Server test failed"
                             } finally {
                                 sh "docker stop server-test || true"
@@ -101,7 +103,7 @@ pipeline {
             when { branch 'develop' }
             steps {
                 script {
-                    githubNotify context: 'Staging Deploy', status: 'PENDING', description: 'Deploying to staging'
+                    githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Staging Deploy', status: 'PENDING', description: 'Deploying to staging')
                     try {
                         sh '''
                             docker rm -f f1nance-client-staging f1nance-server-staging || true
@@ -112,12 +114,12 @@ pipeline {
                         slackSend(channel: '#ci-cd', color: '#2eb886',
                                   message: "✅ *Staging* deployment successful for build #${env.BUILD_NUMBER}")
                         jiraComment(issueKey: "${JIRA_ISSUE}", body: "Staging deployment succeeded for build #${env.BUILD_NUMBER}")
-                        githubNotify context: 'Staging Deploy', status: 'SUCCESS', description: 'Staging deployed'
+                        githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Staging Deploy', status: 'SUCCESS', description: 'Staging deployed')
                     } catch (err) {
                         slackSend(channel: '#ci-cd', color: '#a30200',
                                   message: "❌ *Staging* deployment failed for build #${env.BUILD_NUMBER}")
                         jiraComment(issueKey: "${JIRA_ISSUE}", body: "Staging deployment failed for build #${env.BUILD_NUMBER}: ${err}")
-                        githubNotify context: 'Staging Deploy', status: 'FAILURE', description: 'Staging failed'
+                        githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Staging Deploy', status: 'FAILURE', description: 'Staging failed')
                         error "Staging deployment failed"
                     }
                 }
@@ -128,7 +130,7 @@ pipeline {
             when { branch 'main' }
             steps {
                 script {
-                    githubNotify context: 'Production Deploy', status: 'PENDING', description: 'Deploying to production'
+                    githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Production Deploy', status: 'PENDING', description: 'Deploying to production')
                     try {
                         sh '''
                             docker rm -f f1nance-client-prod f1nance-server-prod || true
@@ -139,12 +141,12 @@ pipeline {
                         slackSend(channel: '#ci-cd', color: '#2eb886',
                                   message: "🚢 *Production* deployment successful for build #${env.BUILD_NUMBER}")
                         jiraComment(issueKey: "${JIRA_ISSUE}", body: "Production deployment succeeded for build #${env.BUILD_NUMBER}")
-                        githubNotify context: 'Production Deploy', status: 'SUCCESS', description: 'Production deployed'
+                        githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Production Deploy', status: 'SUCCESS', description: 'Production deployed')
                     } catch (err) {
                         slackSend(channel: '#ci-cd', color: '#a30200',
                                   message: "🔥 *Production* deployment failed for build #${env.BUILD_NUMBER}")
                         jiraComment(issueKey: "${JIRA_ISSUE}", body: "Production deployment failed for build #${env.BUILD_NUMBER}: ${err}")
-                        githubNotify context: 'Production Deploy', status: 'FAILURE', description: 'Production failed'
+                        githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Production Deploy', status: 'FAILURE', description: 'Production failed')
                         error "Production deployment failed"
                     }
                 }
@@ -166,14 +168,14 @@ pipeline {
             slackSend(channel: '#ci-cd', color: '#36a64f',
                       message: "✅ Pipeline succeeded for *${env.JOB_NAME}* build #${env.BUILD_NUMBER}")
             jiraComment(issueKey: "${JIRA_ISSUE}", body: "Build #${env.BUILD_NUMBER} succeeded for ${env.JOB_NAME}")
-            githubNotify context: 'Build', status: 'SUCCESS', description: 'Pipeline succeeded'
+            githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Build', status: 'SUCCESS', description: 'Pipeline succeeded')
         }
 
         failure {
             slackSend(channel: '#ci-cd', color: '#ff0000',
                       message: "❌ Pipeline failed for *${env.JOB_NAME}* build #${env.BUILD_NUMBER}")
             jiraComment(issueKey: "${JIRA_ISSUE}", body: "Build #${env.BUILD_NUMBER} failed for ${env.JOB_NAME}")
-            githubNotify context: 'Build', status: 'FAILURE', description: 'Pipeline failed'
+            githubNotify(credentialsId: env.GITHUB_CREDENTIALS, repo: env.GITHUB_REPO, context: 'Build', status: 'FAILURE', description: 'Pipeline failed')
         }
     }
 }
