@@ -8,7 +8,7 @@ pipeline {
         SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
         JIRA_ISSUE = 'CPS-1'
         GITHUB_REPO = 'sillysavant/f1nance'
-        GITHUB_CREDENTIALS = 'github-access'
+        GITHUB_CREDENTIALS = 'github_credentials'
     }
 
     stages {
