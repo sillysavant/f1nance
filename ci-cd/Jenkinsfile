@@ -9,7 +9,7 @@ pipeline {
         JIRA_ISSUE = 'CPS-1'
         GITHUB_ACCOUNT = 'sillysavant'
         GITHUB_REPO = 'f1nance'
-        GITHUB_CREDENTIALS = 'github-access'
+        GITHUB_CREDENTIALS = 'github-credentials'
     }
 
     stages {
