@@ -7,7 +7,7 @@ pipeline {
         CLIENT_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-client"
         SERVER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}-server"
         JIRA_ISSUE = 'CPS-1'
-        GITHUB_REPO = 'silly-savant/f1nance'
+        GITHUB_REPO = 'sillysavant/f1nance'
         GITHUB_CREDENTIALS = 'github_token'
     }
 
