@@ -8,6 +8,8 @@ client/node_modules/
 server/env/
 server/venv/
 server/__pycache__/
+server/api/__pycache__/
+
 
 # Ignore IDE/editor folders
 .idea/

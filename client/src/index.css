@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* F1nance Dark Theme - Futuristic Finance for F-1 Students */
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 40% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 40% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Electric Blue - Primary brand color */
+    --primary: 199 100% 54%;
+    --primary-foreground: 222 47% 8%;
+
+    /* Mint/Cyan - Secondary accent */
+    --secondary: 170 100% 71%;
+    --secondary-foreground: 222 47% 8%;
+
+    /* Warm Gold - CTA highlight */
+    --accent: 41 100% 70%;
+    --accent-foreground: 222 47% 8%;
+
+    --muted: 222 30% 20%;
+    --muted-foreground: 210 20% 65%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 30% 20%;
+    --input: 222 30% 18%;
+    --ring: 199 100% 54%;
+
+    --radius: 0.75rem;
+
+    /* Glassmorphism */
+    --glass-bg: 222 40% 12% / 0.6;
+    --glass-border: 210 40% 98% / 0.1;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(199, 100%, 54%), hsl(170, 100%, 71%));
+    --gradient-cosmic: linear-gradient(180deg, hsl(222, 47%, 8%), hsl(222, 40%, 12%));
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(199, 100%, 54% / 0.15), transparent 50%);
+    
+    /* Shadows & Effects */
+    --shadow-glow-blue: 0 0 40px hsl(199, 100%, 54% / 0.3);
+    --shadow-glow-cyan: 0 0 40px hsl(170, 100%, 71% / 0.3);
+    --shadow-card: 0 8px 32px hsl(222, 47%, 4% / 0.4);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Glass morphism */
+  .glass {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl shadow-[var(--shadow-card)] transition-all duration-300;
+  }
+
+  .glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card), var(--shadow-glow-blue);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Glow effects */
+  .glow-blue {
+    box-shadow: var(--shadow-glow-blue);
+  }
+
+  .glow-cyan {
+    box-shadow: var(--shadow-glow-cyan);
+  }
+
+  /* Parallax container */
+  .parallax-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .parallax-layer {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+  }
+
+  /* Cosmic background */
+  .cosmic-bg {
+    background: var(--gradient-cosmic);
+    position: relative;
+  }
+
+  .cosmic-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 600px;
+    background: var(--gradient-glow);
+    pointer-events: none;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  /* Section spacing */
+  .section-padding {
+    @apply py-20 md:py-32;
+  }
+
+  /* Container */
+  .container-custom {
+    @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+}
+
+@layer components {
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .parallax-layer {
+      transform: none !important;
+    }
+  }
+}
