@@ -5,7 +5,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Install dependencies
-COPY client/package.json client/package-lock.json* ./
+COPY client/package*.json ./
 RUN npm ci
 
 # Build the React app
@@ -16,7 +16,7 @@ RUN npm run build
 FROM nginx:stable-alpine AS runner
 
 # Copy build output to nginx's default static directory
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
