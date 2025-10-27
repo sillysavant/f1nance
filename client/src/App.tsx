@@ -12,6 +12,7 @@ import Notifications from "./pages/Notifications";
 import Expenses from "./pages/Expenses";
 import AIAdvisor from "./pages/AIAdvisor";
 import Settings from "./pages/Settings";
+import UploadDocuments from "./pages/UploadDocuments";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/dashboard/expenses" element={<Expenses />} />
           <Route path="/dashboard/ai-advisor" element={<AIAdvisor />} />
           <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/dashboard/upload-documents" element={<UploadDocuments />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

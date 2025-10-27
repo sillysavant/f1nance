@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import NavBar from "@/components/NavBar";
+import DashboardLayout from "@/components/DashboardLayout";
 
 const AIAdvisor = () => {
   return (
-    <NavBar>
+    <DashboardLayout>
       <div className="p-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -38,7 +38,7 @@ const AIAdvisor = () => {
           </div>
         </motion.div>
       </div>
-    </NavBar>
+    </DashboardLayout>
   );
 };
 

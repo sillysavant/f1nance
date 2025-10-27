@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import NavBar from "@/components/NavBar";
+import DashboardLayout from "@/components/DashboardLayout";
 
 const Settings = () => {
   return (
-    <NavBar>
+    <DashboardLayout>
       <div className="p-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -11,7 +11,9 @@ const Settings = () => {
           className="mb-8"
         >
           <h1 className="font-heading text-3xl font-bold mb-2">Settings</h1>
-          <p className="text-muted-foreground">Manage your preferences and account settings</p>
+          <p className="text-muted-foreground">
+            Manage your preferences and account settings
+          </p>
         </motion.div>
 
         <motion.div
@@ -24,14 +26,17 @@ const Settings = () => {
             <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="text-4xl">⚙️</span>
             </div>
-            <h2 className="font-heading text-2xl font-semibold mb-3">Coming Soon</h2>
+            <h2 className="font-heading text-2xl font-semibold mb-3">
+              Coming Soon
+            </h2>
             <p className="text-muted-foreground">
-              Customize your experience with notifications, privacy, and security settings.
+              Customize your experience with notifications, privacy, and
+              security settings.
             </p>
           </div>
         </motion.div>
       </div>
-    </NavBar>
+    </DashboardLayout>
   );
 };
 

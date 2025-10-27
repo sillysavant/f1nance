@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import NavBar from "@/components/NavBar";
+import DashboardLayout from "@/components/DashboardLayout";
 import { TrendingUp, TrendingDown, Calendar, Award } from "lucide-react";
 
 const Dashboard = () => {
   return (
-    <NavBar>
+    <DashboardLayout>
       <div className="p-8">
         {/* Header */}
         <motion.div
@@ -232,7 +232,7 @@ const Dashboard = () => {
           </p>
         </motion.div>
       </div>
-    </NavBar>
+    </DashboardLayout>
   );
 };
 

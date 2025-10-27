@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Sidebar from "@/components/Sidebar";
 
-interface NavBarProps {
+interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-const NavBar = ({ children }: NavBarProps) => {
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -43,4 +43,4 @@ const NavBar = ({ children }: NavBarProps) => {
   );
 };
 
-export default NavBar;
+export default DashboardLayout;
