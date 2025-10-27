@@ -5,6 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
+import Expenses from "./pages/Expenses";
+import AIAdvisor from "./pages/AIAdvisor";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -16,7 +23,13 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/profile" element={<Profile />} />
+          <Route path="/dashboard/notifications" element={<Notifications />} />
+          <Route path="/dashboard/expenses" element={<Expenses />} />
+          <Route path="/dashboard/ai-advisor" element={<AIAdvisor />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
