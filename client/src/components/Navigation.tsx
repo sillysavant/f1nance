@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,10 +53,10 @@ const Navigation = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="default">
+            <Button variant="ghost" size="default" onClick={() => navigate("/auth")}>
               Login
             </Button>
-            <Button variant="hero" size="default">
+            <Button variant="hero" size="default" onClick={() => navigate("/auth")}>
               Get Started Free
             </Button>
           </div>
