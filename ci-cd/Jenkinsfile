@@ -136,9 +136,14 @@ pipeline {
                                     set -e
                                     
                                     # Stop and remove existing containers
-                                    docker stop f1nance-client f1nance-server 2>/dev/null || true
-                                    docker rm -f f1nance-client f1nance-server 2>/dev/null || true
+                                    docker rm -f f1nance-client 2>/dev/null || true
+                                    docker rm -f f1nance-server 2>/dev/null || true
                                     sleep 5
+
+                                    if docker ps -a --format '{{.Names}}' | grep -q '^f1nance-'; then
+                                        echo "⚠️  Some f1nance containers still exist, force removing all..."
+                                        docker ps -a --format '{{.Names}}' | grep '^f1nance-' | xargs -r docker rm -f
+                                    fi
 
                                     # Login to Docker Hub
                                     echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
