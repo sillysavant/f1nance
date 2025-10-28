@@ -113,20 +113,29 @@ pipeline {
                         sshUserPrivateKey(credentialsId: 'cc1cf242-2558-4122-b60d-6bb23cf6601d', keyFileVariable: 'SSH_KEY'),
                         usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
                     ]) {
-                        sh """
+                        sh '''
                             ssh -o StrictHostKeyChecking=no -i $SSH_KEY ec2-user@52.14.182.184 '
-                                docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+                                set -e
+                                docker stop f1nance-client f1nance-server 2>/dev/null || true
+                                docker rm -f f1nance-client f1nance-server 2>/dev/null || true
+                                sleep 5
+
+                                echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+
                                 docker pull ${CLIENT_IMAGE}:latest
                                 docker pull ${SERVER_IMAGE}:latest
 
-                                docker rm -f f1nance-client || true
-                                docker rm -f f1nance-server || true
-                                sleep 3
-
                                 docker run -d --name f1nance-server -p 8000:8000 ${SERVER_IMAGE}:latest
                                 docker run -d --name f1nance-client -p 80:80 --link f1nance-server ${CLIENT_IMAGE}:latest
+
+                                echo "✅ Deployment complete!"
+
+                                echo "🌐 Application URLs:"
+                                PUBLIC_IP=$(curl -s http://checkip.amazonaws.com)
+                                echo "   Client:  http://$PUBLIC_IP"
+                                echo "   API:     http://$PUBLIC_IP:8000"
                             '
-                        """
+                        '''
                     }
                 }
             }
