@@ -151,13 +151,22 @@ pipeline {
                                     docker run -d --name f1nance-server -p 8000:8000 ${SERVER_IMAGE}:latest
                                     docker run -d --name f1nance-client -p 80:80 --link f1nance-server ${CLIENT_IMAGE}:latest
 
-                                    echo "✅ Deployment complete!"
-                                    echo "🌐 Application URLs:"
-                                    PUBLIC_IP=\$(curl -s http://checkip.amazonaws.com)
-                                    echo "   Client:  http://\$PUBLIC_IP"
-                                    echo "   API:     http://\$PUBLIC_IP:8000"
+                                    echo "✅ Deployment to QA completed!"
 ENDSSH
                             """
+                            // Get public IP and display (this runs in Jenkins, so it will show)
+                            def publicIP = sh(
+                                script: "ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 'curl -s http://checkip.amazonaws.com'",
+                                returnStdout: true
+                            ).trim()
+                            
+                            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                            echo "✅ QA Deployment Complete!"
+                            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                            echo "🌐 Application URLs:"
+                            echo "   Client:  http://${publicIP}"
+                            echo "   API:     http://${publicIP}:8000"
+                            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
                         }
                         slackSend(channel: '#team2-ci-cd', color: '#2eb886',
                                   message: "🚀 *QA* deployment successful for build #${env.BUILD_NUMBER}")
