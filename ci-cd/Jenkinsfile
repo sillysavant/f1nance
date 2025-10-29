@@ -129,7 +129,8 @@ pipeline {
                     try {
                         withCredentials([
                             sshUserPrivateKey(credentialsId: 'cc1cf242-2558-4122-b60d-6bb23cf6601d', keyFileVariable: 'SSH_KEY'),
-                            usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
+                            usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
+                            string(credentialsId: 'rds-connection-url', variable: 'DATABASE_URL')
                         ]) {
                             sh """
                                 ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 << 'ENDSSH'
@@ -148,7 +149,7 @@ pipeline {
                                     docker pull ${SERVER_IMAGE}:latest
 
                                     # Run containers
-                                    docker run -d --name f1nance-server -p 8000:8000 ${SERVER_IMAGE}:latest
+                                    docker run -d --name f1nance-server -p 8000:8000 -e DATABASE_URL="${DATABASE_URL}" ${SERVER_IMAGE}:latest
                                     docker run -d --name f1nance-client -p 80:80 --link f1nance-server ${CLIENT_IMAGE}:latest
 
                                     echo "✅ Deployment to QA completed!"
@@ -160,9 +161,6 @@ ENDSSH
                                 returnStdout: true
                             ).trim()
                             
-                            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                            echo "✅ QA Deployment Complete!"
-                            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
                             echo "🌐 Application URLs:"
                             echo "   Client:  http://${publicIP}"
                             echo "   API:     http://${publicIP}:8000"
