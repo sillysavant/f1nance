@@ -134,13 +134,7 @@ pipeline {
                             sh """
                                 ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 << 'ENDSSH'
                                     # Stop and remove existing containers
-                                    docker rm -f f1nance-server 2>/dev/null || true
-                                    docker rm -f f1nance-client 2>/dev/null || true
-                                    
-                                    # Double-check and remove any remaining f1nance containers
-                                    for container in \$(docker ps -aq --filter "name=f1nance"); do
-                                        docker rm -f \$container 2>/dev/null || true
-                                    done
+                                    docker system prune -a
                                     
                                     sleep 2
 
