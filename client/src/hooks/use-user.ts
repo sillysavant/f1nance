@@ -1,0 +1,29 @@
+import { create } from 'zustand';
+import { UserResponse } from '@/lib/authApi';
+import { getCurrentUser } from '@/lib/authApi';
+
+interface UserStore {
+  user: UserResponse | null;
+  isLoading: boolean;
+  error: string | null;
+  fetchUser: () => Promise<void>;
+  setUser: (user: UserResponse | null) => void;
+  clearUser: () => void;
+}
+
+export const useUser = create<UserStore>((set) => ({
+  user: null,
+  isLoading: false,
+  error: null,
+  fetchUser: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const user = await getCurrentUser();
+      set({ user, isLoading: false });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch user', isLoading: false });
+    }
+  },
+  setUser: (user) => set({ user }),
+  clearUser: () => set({ user: null }),
+}));

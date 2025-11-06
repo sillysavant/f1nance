@@ -38,12 +38,18 @@ def login(
 
 
 @router.get("/me", response_model=UserResponse)
-@require_auth
 @handle_exceptions
-def read_current_user(current_user):
+def read_current_user(current_user = Depends(get_current_user)):
     """
     Retrieve the currently authenticated user.
     """
+    print("Current user:", current_user)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return current_user
 
 
@@ -70,3 +76,12 @@ def resend_verification(
     Resend email verification link (only for logged-in users, 1 per 2 min).
     """
     return AuthService.resend_verification_email(db=db, user=current_user)
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+@handle_exceptions
+def logout(current_user=Depends(get_current_user)):
+    """
+    Logout the current user. The frontend should remove the token.
+    """
+    return {"message": "Successfully logged out"}

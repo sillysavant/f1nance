@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     # CORS & API
     # -----------------------------
     ALLOWED_ORIGINS: list[str] = Field(
-        ["http://localhost", "http://localhost:3000"], env="ALLOWED_ORIGINS"
+        ["http://localhost", "http://localhost:8080"], env="ALLOWED_ORIGINS"
     )
 
     # -----------------------------

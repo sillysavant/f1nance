@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -7,10 +7,15 @@ import {
   Brain,
   Settings,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Sidebar from "@/components/Sidebar";
+import { useUser } from "@/hooks/use-user";
+import { removeCookie } from "@/lib/cookie";
+import { EmailVerificationAlert } from "@/components/EmailVerificationAlert";
+import { logout } from "@/lib/authApi";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -19,6 +24,11 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isLoading, error, fetchUser } = useUser();
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -28,8 +38,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { icon: Settings, label: "Settings", path: "/dashboard/settings" },
   ];
 
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still navigate to home page even if the API call fails
+      navigate("/");
+    }
   };
 
   return (
@@ -38,7 +55,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto">
+        {user && !user.is_verified && (
+          <div className="p-4">
+            <EmailVerificationAlert />
+          </div>
+        )}
+        {children}
+      </main>
     </div>
   );
 };

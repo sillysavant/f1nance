@@ -107,11 +107,7 @@ class AuthService:
                 detail="User already verified.",
             )
 
-        token = create_email_verification_token(user.email)
-        verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-        EmailService.send_verification_email(
-            to_email=user.email, verification_url=verification_url
-        )
+        EmailService.send_verification_email(user.email)
 
         return {"message": "Verification email resent successfully."}
 
