@@ -178,7 +178,10 @@ ENDSSH
                             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
                         }
                         slackSend(channel: '#team2-ci-cd', color: '#2eb886',
-                                  message: "🚀 *QA* deployment successful for build #${env.BUILD_NUMBER}")
+                                  message: """🚀 *QA deployment successful*
+                                            Build #${env.BUILD_NUMBER}
+                                            Client: http://${publicIP}
+                                            API: http://${publicIP}:8000""")
                         jiraComment(issueKey: "${JIRA_ISSUE}", body: "QA deployment succeeded for build #${env.BUILD_NUMBER}")
                         githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
                                     context: 'QA Deploy', status: 'SUCCESS', description: 'QA deployment successful')
