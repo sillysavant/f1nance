@@ -127,6 +127,9 @@ pipeline {
                     githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
                                 context: 'QA Deploy', status: 'PENDING', description: 'Deploying to QA environment')
                     try {
+
+                        def publicIP = ""
+
                         withCredentials([
                             sshUserPrivateKey(credentialsId: 'cc1cf242-2558-4122-b60d-6bb23cf6601d', keyFileVariable: 'SSH_KEY'),
                             usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
@@ -166,8 +169,9 @@ pipeline {
                                     echo "✅ Deployment to QA completed!"
 ENDSSH
                             """
+                            
                             // Get public IP and display (this runs in Jenkins, so it will show)
-                            def publicIP = sh(
+                            publicIP = sh(
                                 script: "ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 'curl -s http://checkip.amazonaws.com'",
                                 returnStdout: true
                             ).trim()
