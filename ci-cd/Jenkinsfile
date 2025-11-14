@@ -130,10 +130,10 @@ pipeline {
                         withCredentials([
                             sshUserPrivateKey(credentialsId: 'cc1cf242-2558-4122-b60d-6bb23cf6601d', keyFileVariable: 'SSH_KEY'),
                             usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
-                            string(credentialsId: 'DB_USER', variable: 'DB_USER'),
-                            string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
-                            string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
-                            string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
+                            string(credentialsId: 'f1nance_DB_USER', variable: 'DB_USER'),
+                            string(credentialsId: 'f1nance_DB_PASSWORD', variable: 'DB_PASSWORD'),
+                            string(credentialsId: 'f1nance_DB_HOST', variable: 'DB_HOST'),
+                            string(credentialsId: 'f1nance_DB_NAME', variable: 'DB_NAME'),
                             string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY')
                         ]) {
                             sh """
