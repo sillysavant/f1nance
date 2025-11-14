@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,18 @@ import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Login from "@/components/Login";
 import Register from "@/components/Register";
+import { loginUser, registerUser } from "@/lib/authApi";
+import { setCookie } from "@/lib/cookie";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const searchParams = new URLSearchParams(window.location.search);
+  const mode = searchParams.get('mode') || 'login';
+  const redirect = searchParams.get('redirect');
+  const message = searchParams.get('message');
+
+  const [isLogin, setIsLogin] = useState(mode === 'login');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,12 +25,21 @@ const Auth = () => {
   const [school, setSchool] = useState("");
   const [nationality, setNationality] = useState("");
 
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  useEffect(() => {
+    if (message === 'session_expired') {
+      toast({
+        title: "Session Expired",
+        description: "Please log in again to continue.",
+        variant: "destructive",
+      });
+    }
+  }, [message, toast]);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (submitting) return;
     if (!isLogin && password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -31,14 +49,47 @@ const Auth = () => {
       return;
     }
 
-    toast({
-      title: isLogin ? "Welcome back!" : "Account created!",
-      description: isLogin
-        ? "You've successfully logged in."
-        : "Your account has been created.",
-    });
-
-    navigate("/dashboard");
+    try {
+      setSubmitting(true);
+      if (isLogin) {
+        const token = await loginUser(email, password);
+        setCookie('token', token.access_token);
+        setCookie('token_type', token.token_type || 'bearer');
+        toast({ title: "Welcome back!", description: "You've successfully logged in." });
+        
+        // If there's a pending verification, handle it
+        if (redirect === 'verify') {
+          const pendingToken = sessionStorage.getItem('pendingVerificationToken');
+          if (pendingToken) {
+            sessionStorage.removeItem('pendingVerificationToken');
+            navigate(`/verify-email?token=${pendingToken}`);
+            return;
+          }
+        }
+        
+        navigate("/dashboard");
+      } else {
+        console.log("Starting registration process...");
+        const response = await registerUser({ 
+          email, 
+          full_name: name, 
+          password, 
+          education: school, 
+          nationality 
+        });
+        console.log("Registration successful:", response);
+        toast({
+          title: "Account created!",
+          description: "Please check your email to verify your account before signing in.",
+        });
+        setIsLogin(true);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      toast({ title: "Authentication error", description: message, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -136,10 +187,10 @@ const Auth = () => {
           <div className="mt-6 text-center text-sm text-muted-foreground">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => (submitting ? null : setIsLogin(!isLogin))}
               className="text-primary hover:underline font-medium"
             >
-              {isLogin ? "Sign up" : "Sign in"}
+              {isLogin ? (submitting ? "Sign up" : "Sign up") : (submitting ? "Sign in" : "Sign in")}
             </button>
           </div>
         </motion.div>

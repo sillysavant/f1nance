@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.11-slim AS base
+FROM python:3.13.6-slim AS base
 
 # Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -19,11 +19,11 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Install Python dependencies
-COPY requirements.txt .
+COPY server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . /app/server
+COPY server /app
 
 # Create non-root user and change ownership
 RUN groupadd -r appuser && useradd -r -g appuser appuser \
@@ -40,4 +40,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/ || exit 1
 
 # Run the application
-CMD ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

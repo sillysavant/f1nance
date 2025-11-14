@@ -7,13 +7,17 @@ import {
   Brain,
   Settings,
   LogOut,
+  Loader2,
 } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
+import { removeCookie } from "@/lib/cookie";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isLoading } = useUser();
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -24,6 +28,8 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
+    removeCookie('token');
+    removeCookie('token_type');
     navigate("/");
   };
 
@@ -69,14 +75,20 @@ const Sidebar = () => {
           onClick={() => navigate("/dashboard/profile")}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors mb-2"
         >
-          <Avatar className="w-10 h-10 border-2 border-primary/30">
-            <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground font-semibold">
-              JS
-            </AvatarFallback>
-          </Avatar>
+          {isLoading ? (
+            <div className="flex items-center justify-center w-10 h-10">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          ) : (
+            <Avatar className="w-10 h-10 border-2 border-primary/30">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground font-semibold">
+                {user?.full_name?.split(' ').map(n => n[0]).join('') || '??'}
+              </AvatarFallback>
+            </Avatar>
+          )}
           <div className="flex-1 text-left">
-            <p className="font-medium text-sm">John Student</p>
-            <p className="text-xs text-muted-foreground">Premium Plan</p>
+            <p className="font-medium text-sm">{user?.full_name || 'Loading...'}</p>
+            <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
         </button>
 

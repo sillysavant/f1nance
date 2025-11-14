@@ -1,3 +1,153 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+*.manifest
+*.spec
+
+# -------------------------
+# Environments
+# -------------------------
+.env
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+.env.local
+.env.development
+.env.production
+
+# -------------------------
+# IDE / Editor
+# -------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*.bak
+
+# -------------------------
+# OS Files
+# -------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# -------------------------
+# Logs & Temp Files
+# -------------------------
+*.log
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+*.bak
+*.orig
+*.rej
+
+# -------------------------
+# Pytest / Coverage
+# -------------------------
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+.pyre/
+mypy_cache/
+.dmypy.json
+.pytype/
+
+# -------------------------
+# Database / Alembic
+# -------------------------
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# -------------------------
+# Docker / Containers
+# -------------------------
+docker-compose.override.yml
+.docker/
+*.tar
+*.bak
+*.old
+
+# -------------------------
+# Jupyter / Notebooks
+# -------------------------
+.ipynb_checkpoints/
+*.ipynb
+
+# -------------------------
+# Celery / Async
+# -------------------------
+celerybeat-schedule
+celerybeat.pid
+
+# -------------------------
+# Node / Frontend (if using React/Vue dashboard)
+# -------------------------
+frontend/node_modules/
+frontend/.next/
+frontend/build/
+frontend/dist/
+frontend/.nuxt/
+frontend/.cache/
+frontend/.env
+
+# -------------------------
+# FastAPI-specific / Extras
+# -------------------------
+app/__pycache__/
+app/*.pyc
+*.db-shm
+*.db-wal
+instance/
+uploads/
+media/
+staticfiles/
+
+# -------------------------
+# Test / Reports
+# -------------------------
+test-results/
+reports/
+*.out
+*.err
+
+# -------------------------
+# Backup / Misc
+# -------------------------
+*.bak
+*.old
+*.orig
+*.rej
+
+
 # Ignore Next.js build output
 client/.next/
 client/build/

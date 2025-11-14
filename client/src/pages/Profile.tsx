@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useUser } from "@/hooks/use-user";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +14,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const Profile = () => {
-  const [name, setName] = useState("John Student");
-  const [email, setEmail] = useState("john.student@university.edu");
-  const [school, setSchool] = useState("University of California");
-  const [country, setCountry] = useState("India");
+  const { user } = useUser();
+  const [name, setName] = useState(user?.full_name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [school, setSchool] = useState(user?.education || "");
+  const [country, setCountry] = useState(user?.nationality || "");
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Update form when user data changes
+  useEffect(() => {
+    if (user) {
+      setName(user.full_name);
+      setEmail(user.email);
+      setSchool(user.education || "");
+      setCountry(user.nationality || "");
+    }
+  }, [user]);
 
   const handleSave = () => {
     toast({
@@ -109,8 +121,9 @@ const Profile = () => {
                       id="email"
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-background border-border focus:border-primary"
+                      readOnly
+                      disabled
+                      className="bg-muted border-border cursor-not-allowed"
                     />
                   </div>
 

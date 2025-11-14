@@ -72,7 +72,7 @@ pipeline {
                         sh '''
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-                            docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile server/
+                            docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile .
                             docker push ${SERVER_IMAGE}:${BUILD_NUMBER}
                             docker tag ${SERVER_IMAGE}:${BUILD_NUMBER} ${SERVER_IMAGE}:latest
                             docker push ${SERVER_IMAGE}:latest
@@ -130,7 +130,11 @@ pipeline {
                         withCredentials([
                             sshUserPrivateKey(credentialsId: 'cc1cf242-2558-4122-b60d-6bb23cf6601d', keyFileVariable: 'SSH_KEY'),
                             usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
-                            string(credentialsId: 'rds-connection-url', variable: 'DATABASE_URL')
+                            string(credentialsId: 'DB_USER', variable: 'DB_USER'),
+                            string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
+                            string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
+                            string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
+                            string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY')
                         ]) {
                             sh """
                                 ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 << 'ENDSSH'
@@ -149,7 +153,14 @@ pipeline {
                                     docker pull ${SERVER_IMAGE}:latest
 
                                     # Run containers
-                                    docker run -d --name f1nance-server -p 8000:8000 -e DATABASE_URL="${DATABASE_URL}" ${SERVER_IMAGE}:latest
+                                    docker run -d --name f1nance-server -p 8000:8000 \
+                                        -e DB_USER="${DB_USER}" \
+                                        -e DB_PASSWORD="${DB_PASSWORD}" \
+                                        -e DB_HOST="${DB_HOST}" \
+                                        -e DB_NAME="${DB_NAME}" \
+                                        -e JWT_SECRET_KEY="${JWT_SECRET_KEY}" \
+                                        ${SERVER_IMAGE}:latest
+
                                     docker run -d --name f1nance-client -p 80:80 --link f1nance-server ${CLIENT_IMAGE}:latest
 
                                     echo "✅ Deployment to QA completed!"
