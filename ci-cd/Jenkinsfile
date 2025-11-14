@@ -169,7 +169,7 @@ pipeline {
                                     echo "✅ Deployment to QA completed!"
 ENDSSH
                             """
-                            
+
                             // Get public IP and display (this runs in Jenkins, so it will show)
                             publicIP = sh(
                                 script: "ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 'curl -s http://checkip.amazonaws.com'",
@@ -183,9 +183,9 @@ ENDSSH
                         }
                         slackSend(channel: '#team2-ci-cd', color: '#2eb886',
                                   message: """🚀 *QA deployment successful*
-                                            Build #${env.BUILD_NUMBER}
-                                            Client: http://${publicIP}
-                                            API: http://${publicIP}:8000""")
+                        Build #${env.BUILD_NUMBER}
+                        Client: http://${publicIP}
+                        API: http://${publicIP}:8000""")
                         jiraComment(issueKey: "${JIRA_ISSUE}", body: "QA deployment succeeded for build #${env.BUILD_NUMBER}")
                         githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
                                     context: 'QA Deploy', status: 'SUCCESS', description: 'QA deployment successful')
