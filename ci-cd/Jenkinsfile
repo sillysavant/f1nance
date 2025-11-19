@@ -33,6 +33,22 @@ pipeline {
             steps { checkout scm }
         }
 
+        stage('ESLint Code Analysis') {
+            steps {
+                script {
+                    nodejs('node18') {
+                        sh '''
+                            cd client
+                            npm install
+                            npm run lint
+                        '''
+                    }
+                }
+
+                recordIssues tools: [eslint(pattern: 'client/eslint-report.json')]
+            }
+        }
+
         stage('Build and Push Client Image') {
             steps {
                 script {
