@@ -45,7 +45,7 @@ pipeline {
                     }
                 }
 
-                recordIssues tools: [eslint(pattern: 'client/eslint-report.json')]
+                recordIssues tools: [esLint(pattern: 'client/eslint-report.json')]
             }
         }
 
