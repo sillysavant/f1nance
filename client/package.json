@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint . -f json -o eslint-report.json",
+    "lint:ci": "eslint . -f checkstyle -o eslint-report.xml",
     "preview": "vite preview"
   },
   "dependencies": {

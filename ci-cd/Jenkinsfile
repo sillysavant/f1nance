@@ -40,12 +40,12 @@ pipeline {
                         sh '''
                             cd client
                             npm install
-                            npm run lint || true
+                            npm run lint:ci
                         '''
                     }
                 }
 
-                recordIssues tools: [esLint(pattern: 'client/eslint-report.json')]
+                recordIssues tools: [checkStyle(pattern: 'client/eslint-report.json')]
             }
         }
 
