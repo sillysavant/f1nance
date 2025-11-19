@@ -45,7 +45,7 @@ pipeline {
                     }
                 }
 
-                recordIssues tools: [checkStyle(pattern: 'client/eslint-report.json')]
+                recordIssues tools: [checkStyle(pattern: 'client/eslint-report.xml')]
             }
         }
 
