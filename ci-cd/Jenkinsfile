@@ -54,6 +54,8 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
                         sh '''
+                            mkdir -p /home/ec2-user/odc-data
+
                             mkdir -p dc
                             cd dc
 
@@ -68,6 +70,7 @@ pipeline {
                                 --out ./report \
                                 --format ALL \
                                 --enableExperimental \
+                                --data /home/ec2-user/odc-data \
                                 --nvdApiKey "$NVD_API_KEY" \
                                 --nvdApiDelay 6000
                         '''
