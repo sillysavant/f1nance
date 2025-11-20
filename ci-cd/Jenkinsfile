@@ -57,17 +57,20 @@ pipeline {
                     
                     try {
                         // Run dependency check on both client and server
-                        dependencyCheck additionalArguments: '''
-                            --scan ./
-                            --format HTML
-                            --format XML
-                            --format JSON
-                            --suppression dependency-check-suppressions.xml
-                            --enableExperimental
-                            --prettyPrint
-                        ''', 
-                        odcInstallation: 'dependency-check',
-                        stopBuild: false
+                            withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
+                            dependencyCheck additionalArguments: '''
+                                --scan ./
+                                --nvdApiKey ${NVD_API_KEY}
+                                --format HTML
+                                --format XML
+                                --format JSON
+                                --suppression dependency-check-suppressions.xml
+                                --enableExperimental
+                                --prettyPrint
+                            ''', 
+                            odcInstallation: 'dependency-check',
+                            stopBuild: false
+                        }
 
                         // Publish the dependency check results
                         dependencyCheckPublisher pattern: '**/dependency-check-report.xml',
