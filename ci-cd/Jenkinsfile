@@ -52,23 +52,25 @@ pipeline {
         stage('OWASP Dependency-Check') {
             steps {
                 script {
-                    sh '''
-                        mkdir -p dc
-                        cd dc
+                    withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
+                        sh '''
+                            mkdir -p dc
+                            cd dc
 
-                        curl -Ls -o dependency-check.zip \
-                        https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.10/dependency-check-9.0.10-release.zip
+                            curl -Ls -o dependency-check.zip \
+                            https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.10/dependency-check-9.0.10-release.zip
 
-                        unzip -q dependency-check.zip
+                            unzip -q dependency-check.zip
 
-                        ./dependency-check/bin/dependency-check.sh \
-                            --project f1nance \
-                            --scan ../ \
-                            --out ./report \
-                            --format ALL \
-                            --enableExperimental \
-                            --nvdApiKey "$NVD_API_KEY"
-                    '''
+                            ./dependency-check/bin/dependency-check.sh \
+                                --project f1nance \
+                                --scan ../ \
+                                --out ./report \
+                                --format ALL \
+                                --enableExperimental \
+                                --nvdApiKey "$NVD_API_KEY"
+                        '''
+                    }
                 }
 
                 recordIssues tools: [
