@@ -52,37 +52,52 @@ pipeline {
         stage('OWASP Dependency-Check') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
-                        sh '''
-                            mkdir -p /home/ec2-user/odc-data
+                    githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
+                                context: 'Security Scan', status: 'PENDING', description: 'Running OWASP Dependency-Check')
+                    
+                    try {
+                        // Run dependency check on both client and server
+                        dependencyCheck additionalArguments: '''
+                            --scan ./
+                            --format HTML
+                            --format XML
+                            --format JSON
+                            --suppression dependency-check-suppressions.xml
+                            --enableExperimental
+                            --prettyPrint
+                        ''', 
+                        odcInstallation: 'dependency-check',
+                        stopBuild: false
 
-                            mkdir -p dc
-                            cd dc
+                        // Publish the dependency check results
+                        dependencyCheckPublisher pattern: '**/dependency-check-report.xml',
+                                                stopBuild: false,
+                                                failedTotalCritical: 5,
+                                                failedTotalHigh: 10,
+                                                unstableTotalCritical: 3,
+                                                unstableTotalHigh: 7
 
-                            curl -Ls -o dependency-check.zip \
-                            https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.10/dependency-check-9.0.10-release.zip
-
-                            unzip -q dependency-check.zip
-
-                            ./dependency-check/bin/dependency-check.sh \
-                                --project f1nance \
-                                --scan ../ \
-                                --out ./report \
-                                --format ALL \
-                                --enableExperimental \
-                                --data /home/ec2-user/odc-data \
-                                --nvdApiKey "$NVD_API_KEY" \
-                                --nvdApiDelay 8000 \
-                                --noupdate
-                        '''
+                        githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
+                                    context: 'Security Scan', status: 'SUCCESS', description: 'Security scan completed')
+                        
+                        slackSend(channel: '#team2-ci-cd', color: '#2eb886',
+                                  message: "🔒 *Security Scan* completed for build #${env.BUILD_NUMBER}")
+                        
+                    } catch (err) {
+                        githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
+                                    context: 'Security Scan', status: 'FAILURE', description: 'Security scan failed or found critical vulnerabilities')
+                        
+                        slackSend(channel: '#team2-ci-cd', color: '#ffa500',
+                                  message: "⚠️ *Security Scan* found critical vulnerabilities in build #${env.BUILD_NUMBER}")
+                        
+                        jiraComment(issueKey: "${JIRA_ISSUE}", 
+                                   body: "OWASP Dependency-Check found critical vulnerabilities in build #${env.BUILD_NUMBER}. Review the report.")
+                        
+                        // Decide whether to fail the build or just warn
+                        // error "Critical vulnerabilities found" // Uncomment to fail build
+                        unstable("Vulnerabilities detected")
                     }
                 }
-
-                recordIssues tools: [
-                    owaspDependencyCheck(pattern: 'dc/report/dependency-check-report.xml')
-                ]
-
-                archiveArtifacts artifacts: 'dc/report/*', fingerprint: true
             }
         }
 
