@@ -72,7 +72,8 @@ pipeline {
                                 --enableExperimental \
                                 --data /home/ec2-user/odc-data \
                                 --nvdApiKey "$NVD_API_KEY" \
-                                --nvdApiDelay 6000
+                                --nvdApiDelay 8000 \
+                                --noupdate
                         '''
                     }
                 }
