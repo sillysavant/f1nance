@@ -69,7 +69,7 @@ pipeline {
                                 --format ALL \
                                 --enableExperimental \
                                 --nvdApiKey "$NVD_API_KEY" \
-                                --nvdApiDelay 2000
+                                --nvdApiDelay 6000
                         '''
                     }
                 }
