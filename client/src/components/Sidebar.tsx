@@ -8,11 +8,15 @@ import {
   Settings,
   LogOut,
   Loader2,
+  DollarSign,
+  Book,
+  FileText,
 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { removeCookie } from "@/lib/cookie";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 
 const Sidebar = () => {
   const location = useLocation();
@@ -22,11 +26,14 @@ const Sidebar = () => {
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: Bell, label: "Notifications", path: "/dashboard/notifications" },
-    { icon: Receipt, label: "Expenses", path: "/dashboard/expenses" },
+    { icon: DollarSign, label: "Budget Tracking", path: "/dashboard/budget-tracking" }, // existing
+    { icon: DollarSign, label: "Payments", path: "/dashboard/payments" }, // <-- new Payments page
     { icon: Brain, label: "AI Advisor", path: "/dashboard/ai-advisor" },
-    { icon: Settings, label: "Settings", path: "/dashboard/settings" },
+    { icon: Book, label: "Financial Literacy", path: "/dashboard/financial-literacy" },
+    { icon: FileText, label: "Tax & Compliance", path: "/dashboard/tax-compliance" },
+    { icon: FileText, label: "Support & Operations", path: "/dashboard/support-tickets" },
   ];
-
+  
   const handleLogout = () => {
     removeCookie('token');
     removeCookie('token_type');

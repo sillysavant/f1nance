@@ -1,0 +1,260 @@
+[33mcommit 91beafd04f52ae4490a04a01b4a8b087d5141122[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Nov 13 20:53:29 2025 -0500
+
+    reformat message to slack
+
+[33mcommit 91f3464bfce05193482c82c5c9052b5a462ada6a[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Nov 13 20:49:34 2025 -0500
+
+    reformat message to slack
+
+[33mcommit 6ae2e1abcced99cb654e81e7a10c19c1bf62949f[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Nov 13 20:43:29 2025 -0500
+
+    reconfigure jenkins
+
+[33mcommit 9959b48843595dafa1942f78bb65967146f9dcf4[m
+Merge: 26dc8cd 188010c
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Thu Nov 13 20:36:10 2025 -0500
+
+    Merge pull request #11 from sillysavant/module-1
+    
+    reconfigure jenkins
+
+[33mcommit 188010cad91badb55d3e6d970cece9c2d96f812f[m[33m ([m[1;31morigin/module-1[m[33m)[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Nov 13 20:32:23 2025 -0500
+
+    reconfigure jenkins
+
+[33mcommit 26dc8cd0ed1b420834ad65f47d244d071fd067ec[m
+Merge: 25d96b2 7f284b6
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Thu Nov 13 20:26:39 2025 -0500
+
+    Merge pull request #10 from sillysavant/module-1
+    
+    Module-1
+
+[33mcommit 7f284b63d3d15e545c9ca1231c0055a036023377[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Nov 13 20:21:11 2025 -0500
+
+    reconfigure jenkins
+
+[33mcommit 15dd5941f324a03d0a5f866574dd43b09480f8a2[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Nov 13 20:15:39 2025 -0500
+
+    reconfigure jenkins
+
+[33mcommit b60d32a5ff5b9535fae2e414a02fc16c83549288[m
+Author: swaroop-13 <saiswaroop.msai@gmail.com>
+Date:   Thu Nov 6 22:17:15 2025 +0530
+
+    Integrated auth API's with frontend
+
+[33mcommit 11f5207cbbbf1a5eb4e99ebb2b0bbaada33c35cb[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Nov 4 19:06:57 2025 -0500
+
+    vtran/readjust-docker
+
+[33mcommit 18ac215bc00b236edc3cf200981276d12aa27561[m
+Author: swaroop-13 <saiswaroop.msai@gmail.com>
+Date:   Tue Nov 4 20:40:03 2025 +0530
+
+    added auth APIs
+
+[33mcommit 25d96b23eeb55908ab9006637a70b6b6b8819326[m
+Merge: cafcd2f 4bbe6fa
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Tue Oct 28 20:32:07 2025 -0400
+
+    Merge pull request #9 from sillysavant/vtran/set-up-connection-from-ec2-to-rds
+    
+    configure ec2 and rds connection
+
+[33mcommit 4bbe6fa08585c0305946c1bf177e18ac224a3459[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 20:31:00 2025 -0400
+
+    configure ec2 and rds connection
+
+[33mcommit cafcd2fd42dfde7ed01a936cc0e6bb2d51bc6177[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 20:10:47 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit 046c7572204b666162cdfc6b0e77a3aa3cfd9454[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 20:01:48 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit 596ccebf530699d96136c97266340da474fe29f9[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 19:56:52 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit 7cdf56891e912dc25669c650f11e4e43d7e20da9[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 19:50:24 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit 122800baa7ec3256a854a22086ecdf4e076a8662[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 19:09:02 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit a54926c427a320d6bfa23c89df0fb50aede007ea[m
+Merge: dcf80c4 98cef6b
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Tue Oct 28 19:01:54 2025 -0400
+
+    Merge pull request #8 from sillysavant/vtran/database-connection
+    
+    configure automatic deployment to QA
+
+[33mcommit 98cef6bed34e20b19af812e7013564837443a329[m[33m ([m[1;31morigin/vtran/database-connection[m[33m)[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 18:57:33 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit dcf80c4b92d9a88f992810f504fbe0999d203396[m
+Merge: c4fcf4b a44fd3d
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Tue Oct 28 18:48:58 2025 -0400
+
+    Merge pull request #7 from sillysavant/vtran/database-connection
+    
+    configure automatic deployment to QA
+
+[33mcommit a44fd3dd4c3213e803e0d6046b3985e9c6b1d65d[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 18:45:20 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit 156ecef9b066c7bdb2aede73f931c968ca435641[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Tue Oct 28 18:42:43 2025 -0400
+
+    configure automatic deployment to QA
+
+[33mcommit c4fcf4bf88f34893c338d40ae5c46fa45d349485[m
+Merge: c571f6d ad0a26d
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Tue Oct 28 16:56:52 2025 -0400
+
+    Merge pull request #5 from sillysavant/swaroop-13-patch-1
+    
+    Update README.md
+
+[33mcommit ad0a26d1c35f5ddb797ce4110b6393fd1415e394[m[33m ([m[1;31morigin/swaroop-13-patch-1[m[33m)[m
+Author: swaroop-13 <54467155+swaroop-13@users.noreply.github.com>
+Date:   Tue Oct 28 11:06:16 2025 -0400
+
+    Update README.md
+
+[33mcommit c571f6d331f2d14e885fea7d61cbba9ebfb22159[m
+Merge: e678e47 ec1b40b
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Mon Oct 27 23:14:54 2025 -0400
+
+    Merge pull request #4 from sillysavant/vtran/database-connection
+    
+    test jenkins
+
+[33mcommit ec1b40bb2e3941778180d2792dce9ab76780f5f0[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Mon Oct 27 23:05:10 2025 -0400
+
+    test jenkins
+
+[33mcommit e678e47ac13fa22f9864d254706ad93baa760342[m
+Merge: 8ac8825 a70084c
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Mon Oct 27 10:59:25 2025 -0400
+
+    Merge pull request #3 from sillysavant/vtran/database-connection
+    
+    Vtran/database connection
+
+[33mcommit a70084cfbf49cda447f840ec7b486b8b047340b4[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Mon Oct 27 10:51:25 2025 -0400
+
+    readjusted Docker
+
+[33mcommit c8a4780122329b543678b215d47c599511793d66[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Mon Oct 27 10:38:58 2025 -0400
+
+    CPS-14/upload docs and manage bank accounts
+
+[33mcommit 8ac8825529b2dd4d645489d13fcd478d0b425ac0[m
+Merge: 08ff619 7b61a88
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Mon Oct 27 08:28:52 2025 -0400
+
+    Merge pull request #2 from sillysavant/vtran/database-connection
+    
+    CPS-13/update-UI
+
+[33mcommit 7b61a882ce8e9cf392b3a96fa78b841b2781a8b3[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Mon Oct 27 08:11:29 2025 -0400
+
+    CPS-13/update-UI
+
+[33mcommit 08ff6194ed0e1989ab1bfc5c5f525ef47a913242[m
+Merge: 4ceaac8 9f5d2f3
+Author: sillysavant <64178919+sillysavant@users.noreply.github.com>
+Date:   Sun Oct 26 16:03:35 2025 -0400
+
+    Merge pull request #1 from sillysavant/vtran/database-connection
+    
+    vtran/cps-13-create-account
+
+[33mcommit 9f5d2f3431a5629251d6bc1c973e9e99ffd3ccb5[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Sun Oct 26 15:10:30 2025 -0400
+
+    vtran/cps-13-create-account
+
+[33mcommit f9fdc33fe09877c5ecbda1ed8241107e9d772145[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Sun Oct 26 14:59:04 2025 -0400
+
+    vtran/cps-13-create-account
+
+[33mcommit 4ceaac8c5ba483d32eda44b7ce73912879dc9922[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Oct 23 15:44:34 2025 -0400
+
+    setup multibranch pipeline
+
+[33mcommit 205ac6573e9256796ceefaa18c0437df5f2ee0a6[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Oct 23 15:42:47 2025 -0400
+
+    setup multibranch pipeline
+
+[33mcommit 1dba7769d0d0db9fe0ad26a7bdf2e83e2d2eaaf1[m
+Author: sillysavant <long16012001.na@gmail.com>
+Date:   Thu Oct 23 15:37:14 2025 -0400
+
+    setup multibranch pipeline
+
+[33mcommit 058ae85df2425884c35dcbfae486ca015697c6c6[m
+Author: sillysavan

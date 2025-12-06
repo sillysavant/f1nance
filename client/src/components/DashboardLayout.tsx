@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Sidebar from "@/components/Sidebar";
 import { useUser } from "@/hooks/use-user";
 import { removeCookie } from "@/lib/cookie";
-import { EmailVerificationAlert } from "@/components/EmailVerificationAlert";
+// import { EmailVerificationAlert } from "@/components/EmailVerificationAlert"; // <- REMOVE THIS
 import { logout } from "@/lib/authApi";
 
 interface DashboardLayoutProps {
@@ -44,7 +44,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       navigate("/");
     } catch (error) {
       console.error('Logout failed:', error);
-      // Still navigate to home page even if the API call fails
       navigate("/");
     }
   };
@@ -56,11 +55,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        {user && !user.is_verified && (
-          <div className="p-4">
-            <EmailVerificationAlert />
-          </div>
-        )}
+        {/* Removed EmailVerificationAlert rendering */}
         {children}
       </main>
     </div>

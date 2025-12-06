@@ -4,10 +4,12 @@ import { clearAuthCookies } from './auth';
 
 export interface RegisterRequest {
   email: string;
+  username: string;
   full_name: string;
   password: string;
   education?: string; // maps to school
   nationality?: string;
+  visa_status?: string; // added field
 }
 
 export interface TokenResponse {
@@ -18,11 +20,13 @@ export interface TokenResponse {
 export interface UserResponse {
   id: number;
   email: string;
+  username: string; 
   full_name: string;
   is_verified: boolean;
   created_at: string;
   education?: string;
   nationality?: string;
+  visa_status?: string; // added field
 }
 
 const API_BASE: string = (import.meta as any).env?.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
@@ -46,7 +50,6 @@ async function handleResponse<T>(res: Response): Promise<T> {
     throw new Error(message);
   }
   if (res.status === 401) {
-    // Import dynamically to avoid circular dependency
     const { handleUnauthorized } = await import('./auth');
     handleUnauthorized();
     throw new Error('Session expired. Please log in again.');
@@ -54,16 +57,16 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return (await res.json()) as T;
 }
 
-export async function registerUser(body: RegisterRequest) {
+export async function registerUser(body: RegisterRequest & { username: string, visa_status: string }) {
   const mappedBody = {
     email: body.email,
     password: body.password,
     full_name: body.full_name,
     education: body.education,
     nationality: body.nationality,
+    username: body.username,
+    visa_status: body.visa_status,
   };
-
-  console.log("Attempting registration with:", mappedBody);
 
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
@@ -71,11 +74,9 @@ export async function registerUser(body: RegisterRequest) {
     body: JSON.stringify(mappedBody),
   });
 
-  console.log("Registration response status:", res.status);
-  const data = await handleResponse<UserResponse>(res);
-  console.log("Registration response:", data);
-  return data;
+  return handleResponse<UserResponse>(res);
 }
+
 
 export async function loginUser(email: string, password: string) {
   const form = new URLSearchParams();
@@ -142,9 +143,33 @@ export async function logout() {
     });
     await handleResponse<{ message: string }>(res);
   } finally {
-    // Clear auth cookies regardless of API response
     clearAuthCookies();
   }
 }
 
+export interface UpdateUserProfileRequest {
+  full_name?: string;
+  education?: string;
+  nationality?: string;
+  visa_status?: string;
+}
 
+export async function updateUserProfile(data: UpdateUserProfileRequest) {
+  const token = getCookie('token');
+  const tokenType = getCookie('token_type') || 'bearer';
+
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const res = await fetch(`${API_BASE}/users/me`, {  // <-- fixed path
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `${tokenType} ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  return handleResponse<UserResponse>(res);
+}

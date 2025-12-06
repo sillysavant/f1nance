@@ -78,6 +78,10 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = Field(..., env="SMTP_PASSWORD")
     USE_TLS: bool = Field(True, env="USE_TLS")
 
+    # File Uploads / Storage
+    # -----------------------------
+    UPLOAD_DIR: str = Field("uploads", env="UPLOAD_DIR")  # default folder for document uploads
+
     # -----------------------------
     # Utility Methods
     # -----------------------------
@@ -89,6 +93,7 @@ class Settings(BaseSettings):
 
     def is_staging(self) -> bool:
         return self.ENVIRONMENT.lower() == "staging"
+    
 
     class Config:
         env_file = ".env"
