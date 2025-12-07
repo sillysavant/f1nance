@@ -1,9 +1,10 @@
 from fastapi import HTTPException, status
+from typing import Dict
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from app.models.users import User
 from app.models.audit import UserAuditLog
-from app.schemas.auth import UserCreate, Token
+from app.schemas.auth import UserCreate, Token, UpdateUserProfileRequest
 from app.core.security import (
     verify_password,
     get_password_hash,
@@ -27,13 +28,20 @@ class AuthService:
                 )
 
             hashed_pw = get_password_hash(user_data.password)
+
+            # Set defaults for required fields if missing
+            username = user_data.username or user_data.email.split("@")[0]
+            nationality = user_data.nationality or "Unknown"
+            visa_status = user_data.visa_status or "F1"
+
             user = User(
                 email=user_data.email,
-                username=user_data.username,
+                username=username,
                 full_name=user_data.full_name,
                 hashed_password=hashed_pw,
-                visa_status=user_data.visa_status,
+                visa_status=visa_status,
                 education=user_data.education,
+                nationality=nationality,
             )
             db.add(user)
             db.commit()
@@ -92,7 +100,6 @@ class AuthService:
         )
 
         message = "Logged in successfully"
-
         if not user.is_verified:
             message = "Please verify your email to access the product."
 
@@ -108,7 +115,6 @@ class AuthService:
             )
 
         EmailService.send_verification_email(user.email)
-
         return {"message": "Verification email resent successfully."}
 
     @staticmethod
@@ -127,4 +133,50 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to log profile change.",
+            )
+
+    @staticmethod
+    def update_user_profile(db: Session, user: User, data: UpdateUserProfileRequest):
+        """
+        Update the currently logged-in user's profile.
+        Only updates fields provided in `data`.
+        """
+        updated_fields: Dict[str, str] = {}
+
+        if data.full_name is not None:
+            user.full_name = data.full_name
+            updated_fields["full_name"] = data.full_name
+        if data.education is not None:
+            user.education = data.education
+            updated_fields["education"] = data.education
+        if data.nationality is not None:
+            user.nationality = data.nationality
+            updated_fields["nationality"] = data.nationality
+        if data.visa_status is not None:
+            user.visa_status = data.visa_status
+            updated_fields["visa_status"] = data.visa_status
+
+        if not updated_fields:
+            # Nothing to update
+            return user
+
+        try:
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+            # Log the changes in the audit log
+            AuthService.log_profile_change(
+                db=db,
+                user=user,
+                details=f"Updated fields: {', '.join(updated_fields.keys())}"
+            )
+
+            return user
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to update profile: {str(e)}"
             )

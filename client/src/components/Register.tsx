@@ -5,16 +5,18 @@ import { Button } from "@/components/ui/button";
 interface RegisterProps {
   email: string;
   name: string;
+  username?: string; // added for admin
   password: string;
   confirmPassword: string;
-  school: string;
-  nationality: string;
-  setEmail: (value: string) => void;
-  setName: (value: string) => void;
-  setPassword: (value: string) => void;
-  setConfirmPassword: (value: string) => void;
-  setSchool: (value: string) => void;
-  setNationality: (value: string) => void;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  setName: React.Dispatch<React.SetStateAction<string>>;
+  setUsername?: React.Dispatch<React.SetStateAction<string>>; // added for admin
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  setConfirmPassword: React.Dispatch<React.SetStateAction<string>>;
+  school?: string;
+  nationality?: string;
+  setSchool?: React.Dispatch<React.SetStateAction<string>>;
+  setNationality?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const Register = ({

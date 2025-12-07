@@ -9,9 +9,10 @@ interface UserStore {
   fetchUser: () => Promise<void>;
   setUser: (user: UserResponse | null) => void;
   clearUser: () => void;
+  refreshUser: () => Promise<void>; // <-- added
 }
 
-export const useUser = create<UserStore>((set) => ({
+export const useUser = create<UserStore>((set, get) => ({
   user: null,
   isLoading: false,
   error: null,
@@ -26,4 +27,8 @@ export const useUser = create<UserStore>((set) => ({
   },
   setUser: (user) => set({ user }),
   clearUser: () => set({ user: null }),
+  refreshUser: async () => {
+    // just re-fetches the current user and updates the store
+    await get().fetchUser();
+  },
 }));

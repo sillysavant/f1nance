@@ -75,6 +75,8 @@ const Auth = () => {
           full_name: name, 
           password, 
           education: school, 
+          visa_status: "F1",
+          username: email.split("@")[0],   // <-- REQUIRED
           nationality 
         });
         console.log("Registration successful:", response);
