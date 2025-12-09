@@ -188,6 +188,20 @@ pipeline {
             }
         }
 
+        stage('Manual Approval for QA') {
+            when { 
+                branch 'main'
+                expression { env.CHANGE_ID == null }
+            }
+            steps {
+                script {
+                    timeout(time: 30, unit: 'MINUTES') {
+                        input message: 'Approve deployment to QA'
+                    }
+                }
+            }
+        }
+
         stage('Deploy to QA') {
             when { 
                 branch 'main'
