@@ -156,6 +156,29 @@ pipeline {
             }
         }
 
+        stage('Performance Test') {
+            steps {
+                sh '''
+                    mkdir -p perf-results
+                    jmeter -n \
+                        -t ci-cd/jmeter/api-load-test.jmx \
+                        -l perf-results/results.jtl \
+                        -j perf-results/jmeter.log \
+                        -e -o perf-results/dashboard
+                '''
+            }
+
+            post {
+                always {
+                    publishHTML(target: [
+                        reportDir: 'perf-results/dashboard',
+                        reportFiles: 'index.html',
+                        reportName: 'JMeter Performance Report'
+                    ])
+                }
+            }
+        }
+
         stage('Deploy to Staging') {
             when { 
                 branch 'develop'
