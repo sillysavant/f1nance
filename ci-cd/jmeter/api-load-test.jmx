@@ -33,7 +33,7 @@
       <hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /health" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
-          <stringProp name="HTTPSampler.path">/health</stringProp>
+          <stringProp name="HTTPSampler.path">/</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
