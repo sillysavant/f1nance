@@ -107,15 +107,22 @@ pipeline {
         stage('Client Tests & Coverage') {
             steps {
                 script {
-                    nodejs('node20') {
-                        sh '''
-                            cd client
-                            npm install
-                            npm run test:ci
-                        '''
-                    }
+                    // Build a Docker image for testing
+                    sh """
+                        docker build -t f1nance-client-test:latest -f ci-cd/client.Dockerfile client/
+                    """
+
+                    // Run the tests inside the container
+                    sh """
+                        docker run --rm \
+                            -v \$(pwd)/client/test-results:/app/test-results \
+                            -v \$(pwd)/client/coverage:/app/coverage \
+                            f1nance-client-test:latest \
+                            sh -c "npm run test:ci -- --reporters junit --outputFile test-results/junit.xml"
+                    """
                 }
 
+                // Publish results
                 junit 'client/test-results/junit.xml'
 
                 publishHTML(target: [
