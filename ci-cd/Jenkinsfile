@@ -104,6 +104,47 @@ pipeline {
             }
         }
 
+        stage('Client Tests & Coverage') {
+            steps {
+                script {
+                    nodejs('node18') {
+                        sh '''
+                            cd client
+                            npm install
+                            npm run test:ci
+                        '''
+                    }
+                }
+
+                junit 'client/test-results/junit.xml'
+
+                publishHTML(target: [
+                    reportDir: 'client/coverage/lcov-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Client Coverage'
+                ])
+            }
+        }
+
+        // stage('Server Tests & Coverage') {
+        //     steps {
+        //         sh '''
+        //             cd server
+        //             pip install -r requirements.txt
+        //             pip install pytest pytest-cov
+        //             pytest --junitxml=pytest-report.xml --cov=app --cov-report=xml --cov-report=html
+        //         '''
+
+        //         junit 'server/pytest-report.xml'
+
+        //         publishHTML(target: [
+        //             reportDir: 'server/htmlcov',
+        //             reportFiles: 'index.html',
+        //             reportName: 'Server Coverage'
+        //         ])
+        //     }
+        // }
+
         stage('Build and Push Client Image') {
             steps {
                 script {
@@ -114,14 +155,25 @@ pipeline {
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
-                        sh '''
-                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        retry(3)  {
+                            sh '''
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            '''
+                        }
 
-                            docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile client/
-                            docker push ${CLIENT_IMAGE}:${BUILD_NUMBER}
-                            docker tag ${CLIENT_IMAGE}:${BUILD_NUMBER} ${CLIENT_IMAGE}:latest
-                            docker push ${CLIENT_IMAGE}:latest
-                        '''
+                        retry(2) {
+                            sh '''
+                                docker build -t ${CLIENT_IMAGE}:${BUILD_NUMBER} -f ci-cd/client.Dockerfile client/
+                            '''
+                        }
+
+                        retry(3)  {
+                            sh '''
+                                docker push ${CLIENT_IMAGE}:${BUILD_NUMBER}
+                                docker tag ${CLIENT_IMAGE}:${BUILD_NUMBER} ${CLIENT_IMAGE}:latest
+                                docker push ${CLIENT_IMAGE}:latest
+                            '''
+                        }
                     }
                     githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
                                 context: 'Client Docker Build', status: 'SUCCESS', description: 'Client Docker image built and pushed')
@@ -140,14 +192,27 @@ pipeline {
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
-                        sh '''
-                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        retry(3)  {
+                            sh '''
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            '''
+                        }
 
-                            docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile .
-                            docker push ${SERVER_IMAGE}:${BUILD_NUMBER}
-                            docker tag ${SERVER_IMAGE}:${BUILD_NUMBER} ${SERVER_IMAGE}:latest
-                            docker push ${SERVER_IMAGE}:latest
-                        '''
+                        retry(2) {
+                            sh '''
+                                docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile server/
+                            '''
+                        }
+
+                        retry(3)  {
+                            sh '''
+                                
+                                docker push ${SERVER_IMAGE}:${BUILD_NUMBER}
+                                docker tag ${SERVER_IMAGE}:${BUILD_NUMBER} ${SERVER_IMAGE}:latest
+                                docker push ${SERVER_IMAGE}:latest
+                            '''
+                        }
+
                     }
 
                     githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO,
@@ -247,36 +312,39 @@ pipeline {
                             string(credentialsId: 'f1nance_DB_NAME', variable: 'DB_NAME'),
                             string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY')
                         ]) {
-                            sh """
-                                ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 << 'ENDSSH'
-                                    # Stop and remove existing containers
-                                    docker system prune -a
-                                    
-                                    sleep 2
+                            retry(3) {
 
-                                    set -e
+                                sh """
+                                    ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ec2-user@52.14.182.184 << 'ENDSSH'
+                                        # Stop and remove existing containers
+                                        docker system prune -a
+                                        
+                                        sleep 2
 
-                                    # Login to Docker Hub
-                                    echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                                        set -e
 
-                                    # Pull latest images
-                                    docker pull ${CLIENT_IMAGE}:latest
-                                    docker pull ${SERVER_IMAGE}:latest
+                                        # Login to Docker Hub
+                                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
 
-                                    # Run containers
-                                    docker run -d --name f1nance-server -p 8000:8000 \
-                                        -e DB_USER="${DB_USER}" \
-                                        -e DB_PASSWORD="${DB_PASSWORD}" \
-                                        -e DB_HOST="${DB_HOST}" \
-                                        -e DB_NAME="${DB_NAME}" \
-                                        -e JWT_SECRET_KEY="${JWT_SECRET_KEY}" \
-                                        ${SERVER_IMAGE}:latest
+                                        # Pull latest images
+                                        docker pull ${CLIENT_IMAGE}:latest
+                                        docker pull ${SERVER_IMAGE}:latest
 
-                                    docker run -d --name f1nance-client -p 80:80 --link f1nance-server ${CLIENT_IMAGE}:latest
+                                        # Run containers
+                                        docker run -d --name f1nance-server -p 8000:8000 \
+                                            -e DB_USER="${DB_USER}" \
+                                            -e DB_PASSWORD="${DB_PASSWORD}" \
+                                            -e DB_HOST="${DB_HOST}" \
+                                            -e DB_NAME="${DB_NAME}" \
+                                            -e JWT_SECRET_KEY="${JWT_SECRET_KEY}" \
+                                            ${SERVER_IMAGE}:latest
 
-                                    echo "✅ Deployment to QA completed!"
+                                        docker run -d --name f1nance-client -p 80:80 --link f1nance-server ${CLIENT_IMAGE}:latest
+
+                                        echo "✅ Deployment to QA completed!"
 ENDSSH
-                            """
+                                """
+                            }
 
                             
                             publicIP = sh(
