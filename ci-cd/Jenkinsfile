@@ -107,7 +107,7 @@ pipeline {
         stage('Client Tests & Coverage') {
             steps {
                 script {
-                    nodejs('node18') {
+                    nodejs('node20') {
                         sh '''
                             cd client
                             npm install
