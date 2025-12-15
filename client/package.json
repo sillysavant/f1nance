@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint . -f json -o eslint-report.json",
     "lint:ci": "eslint . -f checkstyle -o eslint-report.xml || true",
-    "test:ci": "vitest --run --coverage",
+    "test:ci": "CI=true vitest run --coverage --reporter=verbose --reporter=junit --outputFile.junit=./test-results/junit.xml",
     "preview": "vite preview"
   },
   "jest": {
