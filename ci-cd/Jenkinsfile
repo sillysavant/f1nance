@@ -36,7 +36,7 @@ pipeline {
         stage('ESLint Code Analysis') {
             steps {
                 script {
-                    nodejs('node18') {
+                    nodejs('node20') {
                         sh '''
                             cd client
                             npm install
