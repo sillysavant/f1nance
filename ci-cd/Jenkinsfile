@@ -107,7 +107,7 @@ pipeline {
         stage('Client: Install Dependencies') {
             steps {
                 script {
-                    nodejs('node18') {
+                    nodejs('node20') {
                         sh '''
                             cd client
                             npm ci
@@ -124,7 +124,7 @@ pipeline {
                                 context: 'Client Tests', status: 'PENDING', description: 'Running client tests')
                     
                     try {
-                        nodejs('node18') {
+                        nodejs('node20') {
                             sh '''
                                 cd client
                                 npm run test:ci
