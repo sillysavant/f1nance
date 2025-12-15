@@ -113,10 +113,10 @@ pipeline {
                         
                         # Run tests inside container without mounting coverage dir
                         docker run --rm \
-                            -v $(pwd)/client/test-results:/app/test-results \
+                            -v \$(pwd)/client/test-results:/app/test-results \
                             f1nance-client-test:latest
 
-                        docker cp $(docker create f1nance-client-test:latest):/app/test-output/coverage ./client/coverage || true
+                        docker cp \$(docker create f1nance-client-test:latest):/app/test-output/coverage ./client/coverage || true
                     """
                 }
 
