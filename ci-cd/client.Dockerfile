@@ -19,7 +19,7 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 
 # Test stage for CI
-FROM node:20-alpine AS tester
+FROM node:18-alpine AS tester
 WORKDIR /app
 
 # Install dependencies
@@ -31,4 +31,4 @@ COPY . .
 
 # Run tests
 ENV VITEST_COVERAGE_DIR=/app/test-output/coverage
-CMD ["sh", "-c", "npm run test:ci -- --coverage --coverage-dir $VITEST_COVERAGE_DIR"]
+CMD ["sh", "-c", "npm run test:ci -- --coverage-dir $VITEST_COVERAGE_DIR"]
