@@ -108,11 +108,16 @@ pipeline {
             steps {
                 script {
                     sh """
+                        # Build test image
                         docker build -t f1nance-client-test:latest --target tester -f ci-cd/client.Dockerfile client/
+                        
+                        # Run tests inside container without mounting coverage dir
                         docker run --rm \
                             -v \$(pwd)/client/test-results:/app/test-results \
-                            -v \$(pwd)/client/coverage:/app/coverage \
                             f1nance-client-test:latest
+                        
+                        # Copy coverage results after container finishes
+                        docker cp \$(docker create f1nance-client-test:latest):/app/coverage ./client/coverage
                     """
                 }
 
