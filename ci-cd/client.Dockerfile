@@ -17,18 +17,3 @@ FROM nginx:stable-alpine AS runner
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
-
-# Test stage for CI
-FROM node:18-alpine AS tester
-WORKDIR /app
-
-# Install dependencies
-COPY package*.json ./
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Run tests
-ENV VITEST_COVERAGE_DIR=/app/test-output/coverage
-CMD ["sh", "-c", "npm run test:ci -- --coverage-dir $VITEST_COVERAGE_DIR"]

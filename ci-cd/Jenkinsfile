@@ -104,29 +104,84 @@ pipeline {
             }
         }
 
-        stage('Client Tests & Coverage') {
+        stage('Client: Install Dependencies') {
             steps {
                 script {
-                    sh """
-                        # Build test image
-                        docker build -t f1nance-client-test:latest --target tester -f ci-cd/client.Dockerfile client/
-                        
-                        # Run tests inside container without mounting coverage dir
-                        docker run --rm \
-                            -v \$(pwd)/client/test-results:/app/test-results \
-                            f1nance-client-test:latest
-
-                        docker cp \$(docker create f1nance-client-test:latest):/app/test-output/coverage ./client/coverage || true
-                    """
+                    nodejs('node18') {
+                        sh '''
+                            cd client
+                            npm ci
+                        '''
+                    }
                 }
+            }
+        }
 
-                junit 'client/test-results/junit.xml'
-
-                publishHTML(target: [
-                    reportDir: 'client/coverage/lcov-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Client Coverage'
-                ])
+        stage('Client: Run Tests') {
+            steps {
+                script {
+                    githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
+                                context: 'Client Tests', status: 'PENDING', description: 'Running client tests')
+                    
+                    try {
+                        nodejs('node18') {
+                            sh '''
+                                cd client
+                                npm run test:ci
+                            '''
+                        }
+                        
+                        // Publish JUnit test results
+                        junit testResults: 'client/test-results/junit.xml', 
+                              allowEmptyResults: false,
+                              skipPublishingChecks: false
+                        
+                        // Publish HTML coverage report
+                        publishHTML([
+                            reportDir: 'client/coverage',
+                            reportFiles: 'index.html',
+                            reportName: 'Client Code Coverage',
+                            keepAll: true,
+                            alwaysLinkToLastBuild: true,
+                            allowMissing: false
+                        ])
+                        
+                        // Publish Cobertura coverage report
+                        publishCoverage adapters: [
+                            coberturaAdapter('client/coverage/cobertura-coverage.xml')
+                        ],
+                        sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                        
+                        githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
+                                    context: 'Client Tests', status: 'SUCCESS', description: 'All client tests passed')
+                        
+                        slackSend(channel: '#team2-ci-cd', color: '#2eb886',
+                                  message: "✅ *Client tests passed* for build #${env.BUILD_NUMBER}")
+                        
+                    } catch (err) {
+                        // Still publish results even if tests fail
+                        junit testResults: 'client/test-results/junit.xml', 
+                              allowEmptyResults: true,
+                              skipPublishingChecks: false
+                        
+                        publishHTML([
+                            reportDir: 'client/coverage',
+                            reportFiles: 'index.html',
+                            reportName: 'Client Code Coverage',
+                            keepAll: true,
+                            alwaysLinkToLastBuild: true,
+                            allowMissing: true
+                        ])
+                        
+                        githubNotify(credentialsId: GITHUB_CREDENTIALS, account: GITHUB_ACCOUNT, repo: GITHUB_REPO, 
+                                    context: 'Client Tests', status: 'FAILURE', description: 'Client tests failed')
+                        
+                        slackSend(channel: '#team2-ci-cd', color: '#a30200',
+                                  message: "❌ *Client tests failed* for build #${env.BUILD_NUMBER}")
+                        
+                        error "Client tests failed: ${err.message}"
+                    }
+                }
             }
         }
 
