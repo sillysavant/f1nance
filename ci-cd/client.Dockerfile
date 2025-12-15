@@ -30,4 +30,5 @@ RUN npm ci
 COPY . .
 
 # Run tests
-CMD ["npm", "run", "test:ci"]
+ENV VITEST_COVERAGE_DIR=/app/test-output/coverage
+CMD ["sh", "-c", "npm run test:ci -- --coverage --coverage-dir $VITEST_COVERAGE_DIR"]
