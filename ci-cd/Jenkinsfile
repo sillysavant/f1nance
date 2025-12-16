@@ -48,7 +48,7 @@ pipeline {
                 recordIssues tools: [checkStyle(pattern: 'client/eslint-report.xml')]
             }
         }
-        
+
         stage('Client: Install Dependencies') {
             steps {
                 script {
@@ -265,7 +265,7 @@ Build #${env.BUILD_NUMBER}""")
 
                         retry(2) {
                             sh '''
-                                docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile server/
+                                docker build -t ${SERVER_IMAGE}:${BUILD_NUMBER} -f ci-cd/server.Dockerfile .
                             '''
                         }
 
